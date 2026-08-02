@@ -233,11 +233,16 @@ public class ChatManager {
         if (!isChatEnabled) {
             return false;
         } else {
-            return switch (chatChannel) {
-                case ADMIN, PARTY, PARTY_OFFICER ->
-                        ChatConfig.getInstance().isChatChannelEnabled(chatChannel);
-                case NONE -> true;
-            };
+            switch (chatChannel) {
+                case ADMIN:
+                case PARTY:
+                case PARTY_OFFICER:
+                    return ChatConfig.getInstance().isChatChannelEnabled(chatChannel);
+                case NONE:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 

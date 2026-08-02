@@ -9,6 +9,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.player.UniqueDataType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
+import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.database.UUIDUpdateAsyncTask;
 import com.gmail.nossr50.util.LogUtils;
@@ -101,7 +102,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
 
         // Set up pools
-        final var config = mcMMO.p.getGeneralConfig();
+        final GeneralConfig config = mcMMO.p.getGeneralConfig();
         this.miscPool = createDataSource(
                 driverPath,
                 connectionString,
@@ -126,7 +127,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
 
     @NotNull
     private static String getConnectionString() {
-        final var general = mcMMO.p.getGeneralConfig();
+        final GeneralConfig general = mcMMO.p.getGeneralConfig();
         String connectionString = "jdbc:mysql://" + general.getMySQLServerName()
                 + ":" + general.getMySQLServerPort() + "/"
                 + general.getMySQLDatabaseName();
@@ -976,10 +977,10 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private PlayerProfile loadFromResult(String playerName, ResultSet result) throws SQLException {
-        final var skills = new EnumMap<PrimarySkillType, Integer>(PrimarySkillType.class);
-        final var skillsXp = new EnumMap<PrimarySkillType, Float>(PrimarySkillType.class);
-        final var skillsDATS = new EnumMap<SuperAbilityType, Integer>(SuperAbilityType.class);
-        final var uniqueData = new EnumMap<UniqueDataType, Integer>(UniqueDataType.class);
+        final Map<PrimarySkillType, Integer> skills = new EnumMap<PrimarySkillType, Integer>(PrimarySkillType.class);
+        final Map<PrimarySkillType, Float> skillsXp = new EnumMap<PrimarySkillType, Float>(PrimarySkillType.class);
+        final Map<SuperAbilityType, Integer> skillsDATS = new EnumMap<SuperAbilityType, Integer>(SuperAbilityType.class);
+        final Map<UniqueDataType, Integer> uniqueData = new EnumMap<UniqueDataType, Integer>(UniqueDataType.class);
 
         // --- Skills & XP by predictable alias name ---
 
@@ -1455,11 +1456,20 @@ public final class SQLDatabaseManager implements DatabaseManager {
     // ---------------------------------------------------------------------
 
     Connection getConnection(PoolIdentifier identifier) throws SQLException {
-        Connection connection = switch (identifier) {
-            case LOAD -> loadPool.getConnection();
-            case MISC -> miscPool.getConnection();
-            case SAVE -> savePool.getConnection();
-        };
+        Connection connection;
+        switch (identifier) {
+            case LOAD:
+                connection = loadPool.getConnection();
+                break;
+            case MISC:
+                connection = miscPool.getConnection();
+                break;
+            case SAVE:
+                connection = savePool.getConnection();
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + identifier);
+        }
         if (connection == null) {
             throw new RuntimeException(
                     "getConnection() for " + identifier.name().toLowerCase(Locale.ENGLISH)
@@ -1480,27 +1490,45 @@ public final class SQLDatabaseManager implements DatabaseManager {
 
         try (Statement statement = connection.createStatement()) {
             switch (upgrade) {
-                case ADD_FISHING -> checkUpgradeAddFishing(statement);
-                case ADD_BLAST_MINING_COOLDOWN -> checkUpgradeAddBlastMiningCooldown(statement);
-                case ADD_MOB_HEALTHBARS -> checkUpgradeAddMobHealthbars(statement);
-                case DROP_SQL_PARTY_NAMES -> checkUpgradeDropPartyNames(statement);
-                case DROP_SPOUT -> checkUpgradeDropSpout(statement);
-                case ADD_ALCHEMY -> checkUpgradeAddAlchemy(statement);
-                case ADD_UUIDS -> {
+                case ADD_FISHING:
+                    checkUpgradeAddFishing(statement);
+                    break;
+                case ADD_BLAST_MINING_COOLDOWN:
+                    checkUpgradeAddBlastMiningCooldown(statement);
+                    break;
+                case ADD_MOB_HEALTHBARS:
+                    checkUpgradeAddMobHealthbars(statement);
+                    break;
+                case DROP_SQL_PARTY_NAMES:
+                    checkUpgradeDropPartyNames(statement);
+                    break;
+                case DROP_SPOUT:
+                    checkUpgradeDropSpout(statement);
+                    break;
+                case ADD_ALCHEMY:
+                    checkUpgradeAddAlchemy(statement);
+                    break;
+                case ADD_UUIDS:
                     checkUpgradeAddUUIDs(statement);
-                }
-                case ADD_SCOREBOARD_TIPS -> {
+                    break;
+                case ADD_SCOREBOARD_TIPS:
                     checkUpgradeAddScoreboardTips(statement);
-                }
-                case DROP_NAME_UNIQUENESS -> {
+                    break;
+                case DROP_NAME_UNIQUENESS:
                     checkNameUniqueness(statement);
-                }
-                case ADD_SKILL_TOTAL -> checkUpgradeSkillTotal(connection);
-                case ADD_UNIQUE_PLAYER_DATA -> checkUpgradeAddUniqueChimaeraWing(statement);
-                case SQL_CHARSET_UTF8MB4 -> updateCharacterSet(statement);
-                default -> {
+                    break;
+                case ADD_SKILL_TOTAL:
+                    checkUpgradeSkillTotal(connection);
+                    break;
+                case ADD_UNIQUE_PLAYER_DATA:
+                    checkUpgradeAddUniqueChimaeraWing(statement);
+                    break;
+                case SQL_CHARSET_UTF8MB4:
+                    updateCharacterSet(statement);
+                    break;
+                default:
                     // no-op
-                }
+                    break;
             }
         } catch (SQLException ex) {
             logSQLException(ex);

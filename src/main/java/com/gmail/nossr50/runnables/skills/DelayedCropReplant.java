@@ -37,7 +37,8 @@ public class DelayedCropReplant extends CancellableRunnable {
             int desiredCropAge, boolean wasImmaturePlant) {
         BlockData cropData = cropState.getBlockData();
 
-        if (cropData instanceof Directional cropDir) {
+        if (cropData instanceof Directional) {
+            Directional cropDir = (Directional) cropData;
             cropFace = cropDir.getFacing();
         }
 
@@ -83,7 +84,8 @@ public class DelayedCropReplant extends CancellableRunnable {
                 }
             }
 
-            if (blockState.getBlockData() instanceof Ageable ageable) {
+            if (blockState.getBlockData() instanceof Ageable) {
+                Ageable ageable = (Ageable) blockState.getBlockData();
                 ageable.setAge(age);
                 blockState.setBlockData(ageable);
                 blockState.update(true, true);

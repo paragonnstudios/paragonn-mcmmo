@@ -152,43 +152,45 @@ public class TextComponentFactory {
         TextComponent.Builder webTextComponent;
 
         switch (webLinks) {
-            case WEBSITE -> {
+            case WEBSITE:
                 webTextComponent = Component.text()
                         .content(LocaleLoader.getString("JSON.Hover.AtSymbolURL"));
                 TextUtils.addChildWebComponent(webTextComponent, "Web");
                 webTextComponent.clickEvent(getUrlClickEvent(McMMOUrl.urlWebsite));
-            }
-            case SPIGOT -> {
+                break;
+            case SPIGOT:
                 webTextComponent = Component.text()
                         .content(LocaleLoader.getString("JSON.Hover.AtSymbolURL"));
                 TextUtils.addChildWebComponent(webTextComponent, "Spigot");
                 webTextComponent.clickEvent(getUrlClickEvent(McMMOUrl.urlSpigot));
-            }
-            case DISCORD -> {
+                break;
+            case DISCORD:
                 webTextComponent = Component.text()
                         .content(LocaleLoader.getString("JSON.Hover.AtSymbolURL"));
                 TextUtils.addChildWebComponent(webTextComponent, "Discord");
                 webTextComponent.clickEvent(getUrlClickEvent(McMMOUrl.urlDiscord));
-            }
-            case PATREON -> {
+                break;
+            case PATREON:
                 webTextComponent = Component.text()
                         .content(LocaleLoader.getString("JSON.Hover.AtSymbolURL"));
                 TextUtils.addChildWebComponent(webTextComponent, "Patreon");
                 webTextComponent.clickEvent(getUrlClickEvent(McMMOUrl.urlPatreon));
-            }
-            case WIKI -> {
+                break;
+            case WIKI:
                 webTextComponent = Component.text()
                         .content(LocaleLoader.getString("JSON.Hover.AtSymbolURL"));
                 TextUtils.addChildWebComponent(webTextComponent, "Wiki");
                 webTextComponent.clickEvent(getUrlClickEvent(McMMOUrl.urlWiki));
-            }
-            case HELP_TRANSLATE -> {
+                break;
+            case HELP_TRANSLATE:
                 webTextComponent = Component.text()
                         .content(LocaleLoader.getString("JSON.Hover.AtSymbolURL"));
                 TextUtils.addChildWebComponent(webTextComponent, "Lang");
                 webTextComponent.clickEvent(getUrlClickEvent(McMMOUrl.urlTranslate));
-            }
-            default -> webTextComponent = Component.text().content("NOT DEFINED");
+                break;
+            default:
+                webTextComponent = Component.text().content("NOT DEFINED");
+                break;
         }
 
         TextUtils.addNewHoverComponentToTextComponent(webTextComponent, getUrlHoverEvent(webLinks));
@@ -201,7 +203,7 @@ public class TextComponentFactory {
         TextComponent.Builder componentBuilder = Component.text().content(webLinks.getNiceTitle());
 
         switch (webLinks) {
-            case WEBSITE -> {
+            case WEBSITE:
                 addUrlHeaderHover(webLinks, componentBuilder);
                 componentBuilder.append(Component.newline()).append(Component.newline());
                 componentBuilder.append(
@@ -209,8 +211,8 @@ public class TextComponentFactory {
                 componentBuilder.append(Component.text(
                         "\nDev Blogs, and information related to mcMMO can be found here",
                         NamedTextColor.GRAY));
-            }
-            case SPIGOT -> {
+                break;
+            case SPIGOT:
                 addUrlHeaderHover(webLinks, componentBuilder);
                 componentBuilder.append(Component.newline()).append(Component.newline());
                 componentBuilder.append(
@@ -218,8 +220,8 @@ public class TextComponentFactory {
                 componentBuilder.append(
                         Component.text("\nI post regularly in the discussion thread here!",
                                 NamedTextColor.GRAY));
-            }
-            case PATREON -> {
+                break;
+            case PATREON:
                 addUrlHeaderHover(webLinks, componentBuilder);
                 componentBuilder.append(Component.newline()).append(Component.newline());
                 componentBuilder.append(
@@ -227,8 +229,8 @@ public class TextComponentFactory {
                 componentBuilder.append(Component.newline());
                 componentBuilder.append(Component.text("Show support by buying me a coffee :)",
                         NamedTextColor.GRAY));
-            }
-            case WIKI -> {
+                break;
+            case WIKI:
                 addUrlHeaderHover(webLinks, componentBuilder);
                 componentBuilder.append(Component.newline()).append(Component.newline());
                 componentBuilder.append(
@@ -237,14 +239,14 @@ public class TextComponentFactory {
                 componentBuilder.append(Component.text(
                         "I'm looking for more wiki staff, contact me on our discord!",
                         NamedTextColor.DARK_GRAY));
-            }
-            case DISCORD -> {
+                break;
+            case DISCORD:
                 addUrlHeaderHover(webLinks, componentBuilder);
                 componentBuilder.append(Component.newline()).append(Component.newline());
                 componentBuilder.append(
                         Component.text(webLinks.getLocaleDescription(), NamedTextColor.GREEN));
-            }
-            case HELP_TRANSLATE -> {
+                break;
+            case HELP_TRANSLATE:
                 addUrlHeaderHover(webLinks, componentBuilder);
                 componentBuilder.append(Component.newline()).append(Component.newline());
                 componentBuilder.append(
@@ -254,7 +256,7 @@ public class TextComponentFactory {
                         "You can use this website to help translate mcMMO into your language!" +
                                 "\nIf you want to know more contact me in discord.",
                         NamedTextColor.DARK_GRAY));
-            }
+                break;
         }
 
         return componentBuilder.build();

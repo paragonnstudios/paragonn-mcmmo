@@ -9,6 +9,6 @@ import org.bukkit.inventory.ItemStack;
 public class FakeBrewEvent extends BrewEvent implements FakeEvent {
     public FakeBrewEvent(Block brewer, BrewerInventory contents, List<ItemStack> results,
             int fuelLevel) {
-        super(brewer, contents, results, fuelLevel);
+        super(brewer, contents, fuelLevel);
     }
 }

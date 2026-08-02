@@ -131,9 +131,11 @@ public final class EventUtils {
             return false;
         }
 
-        if (!entity.isValid() || !(entity instanceof LivingEntity livingEntity)) {
+        if (!entity.isValid() || !(entity instanceof LivingEntity)) {
             return false;
         }
+
+        LivingEntity livingEntity = (LivingEntity) entity;
 
         if (CombatUtils.isInvincible(livingEntity, damage)) {
             return false;
@@ -387,10 +389,17 @@ public final class EventUtils {
                     player.getInventory().getItemInMainHand(), true);
             pluginManager.callEvent(damageEvent);
 
-            final BlockBreakEvent fakeBlockBreakEvent = switch (eventType) {
-                case FAKE -> new FakeBlockBreakEvent(block, player);
-                case TREE_FELLER -> new TreeFellerBlockBreakEvent(block, player);
-            };
+            BlockBreakEvent fakeBlockBreakEvent;
+            switch (eventType) {
+                case FAKE:
+                    fakeBlockBreakEvent = new FakeBlockBreakEvent(block, player);
+                    break;
+                case TREE_FELLER:
+                    fakeBlockBreakEvent = new TreeFellerBlockBreakEvent(block, player);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + eventType);
+            }
 
             pluginManager.callEvent(fakeBlockBreakEvent);
             return !damageEvent.isCancelled() && !fakeBlockBreakEvent.isCancelled();

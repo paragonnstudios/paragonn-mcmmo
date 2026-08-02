@@ -371,13 +371,15 @@ public final class SkillUtils {
                 continue;
             }
 
-            if (bukkitRecipe instanceof ShapelessRecipe shapelessRecipe) {
+            if (bukkitRecipe instanceof ShapelessRecipe) {
+                ShapelessRecipe shapelessRecipe = (ShapelessRecipe) bukkitRecipe;
                 for (RecipeChoice ingredient : shapelessRecipe.getChoiceList()) {
                     if (ingredient != null && recipeItem != null && ingredient.test(recipeItem)) {
                         quantity += 1;
                     }
                 }
-            } else if (bukkitRecipe instanceof ShapedRecipe shapedRecipe) {
+            } else if (bukkitRecipe instanceof ShapedRecipe) {
+                ShapedRecipe shapedRecipe = (ShapedRecipe) bukkitRecipe;
                 for (RecipeChoice ingredient : shapedRecipe.getChoiceMap()
                         .values()) {
                     if (ingredient != null && recipeItem != null && ingredient.test(recipeItem)) {

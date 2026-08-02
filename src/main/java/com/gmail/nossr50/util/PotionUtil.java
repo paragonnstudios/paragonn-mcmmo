@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,9 @@ public final class PotionUtil {
     public static final String STRONG = "STRONG";
     public static final String LONG = "LONG";
 
+    private static Method getBasePotionTypeMethod;
+    private static Method setBasePotionTypeMethod;
+
     static {
         // Uncraftable doesn't exist in modern versions
         // It served as a potion that didn't craft into anything else so it didn't conflict with vanilla systems
@@ -29,6 +33,13 @@ public final class PotionUtil {
         legacyPotionTypes.put("INSTANT_HEAL", "HEALING");
         legacyPotionTypes.put("INSTANT_DAMAGE", "HARMING");
         legacyPotionTypes.put("REGEN", "REGENERATION");
+
+        try {
+            getBasePotionTypeMethod = PotionMeta.class.getMethod("getBasePotionType");
+            setBasePotionTypeMethod = PotionMeta.class.getMethod("setBasePotionType", PotionType.class);
+        } catch (NoSuchMethodException ignored) {
+            // Legacy version
+        }
     }
 
     private PotionUtil() {}
@@ -53,10 +64,16 @@ public final class PotionUtil {
         return Arrays.stream(PotionType.values())
                 // Allow matching by namespace key ("swiftness", "long_swiftness") or enum name
                 .filter(potionType -> {
-                    final NamespacedKey key = potionType.getKey();
-                    final String keyStr = key != null ? key.getKey() : "";
-                    return keyStr.toUpperCase(Locale.ENGLISH).contains(updatedName)
-                            || potionType.name().toUpperCase(Locale.ENGLISH).contains(updatedName);
+                    try {
+                        // getKey() might not exist in 1.8.8
+                        Method getKeyMethod = potionType.getClass().getMethod("getKey");
+                        NamespacedKey key = (NamespacedKey) getKeyMethod.invoke(potionType);
+                        String keyStr = key != null ? key.getKey() : "";
+                        return keyStr.toUpperCase(Locale.ENGLISH).contains(updatedName)
+                                || potionType.name().toUpperCase(Locale.ENGLISH).contains(updatedName);
+                    } catch (Exception e) {
+                        return potionType.name().toUpperCase(Locale.ENGLISH).contains(updatedName);
+                    }
                 })
                 // Enforce strong/long selection by the enum name prefix convention
                 .filter(potionType -> isUpgraded == potionType.name().startsWith(STRONG + "_"))
@@ -69,8 +86,13 @@ public final class PotionUtil {
      * Returns the NamespacedKey key string portion for this potion type (e.g. "swiftness").
      */
     public static @NotNull String getKeyGetKey(@NotNull PotionType potionType) {
-        final NamespacedKey key = potionType.getKey();
-        return key != null ? key.getKey() : potionType.name();
+        try {
+            Method getKeyMethod = potionType.getClass().getMethod("getKey");
+            NamespacedKey key = (NamespacedKey) getKeyMethod.invoke(potionType);
+            return key != null ? key.getKey() : potionType.name();
+        } catch (Exception e) {
+            return potionType.name();
+        }
     }
 
     public static String convertPotionConfigName(String legacyName) {
@@ -95,7 +117,7 @@ public final class PotionUtil {
     public static String convertLegacyNames(String legacyPotionType) {
         String modernized = legacyPotionType;
 
-        for (var key : legacyPotionTypes.keySet()) {
+        for (String key : legacyPotionTypes.keySet()) {
             if (modernized.contains(key)) {
                 modernized = modernized.replace(key, legacyPotionTypes.get(key));
                 break;
@@ -106,27 +128,41 @@ public final class PotionUtil {
     }
 
     public static boolean isStrong(@NotNull PotionMeta potionMeta) {
-        final PotionType base = potionMeta.getBasePotionType();
+        final PotionType base = getBasePotionType(potionMeta);
         return base != null && base.name().startsWith(STRONG + "_");
     }
 
     public static boolean isLong(@NotNull PotionMeta potionMeta) {
-        final PotionType base = potionMeta.getBasePotionType();
+        final PotionType base = getBasePotionType(potionMeta);
         return base != null && base.name().startsWith(LONG + "_");
     }
 
     public static boolean isPotionTypeWater(@NotNull PotionMeta potionMeta) {
-        return potionMeta.getBasePotionType() == PotionType.WATER;
+        return getBasePotionType(potionMeta) == PotionType.WATER;
     }
 
     public static boolean hasBasePotionEffects(@NotNull PotionMeta potionMeta) {
-        final PotionType base = potionMeta.getBasePotionType();
+        final PotionType base = getBasePotionType(potionMeta);
         if (base == null) {
             return false;
         }
 
-        final List<PotionEffect> effects = base.getPotionEffects();
-        return effects != null && !effects.isEmpty();
+        try {
+            Method getPotionEffectsMethod = base.getClass().getMethod("getPotionEffects");
+            List<PotionEffect> effects = (List<PotionEffect>) getPotionEffectsMethod.invoke(base);
+            return effects != null && !effects.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static PotionType getBasePotionType(PotionMeta potionMeta) {
+        if (getBasePotionTypeMethod != null) {
+            try {
+                return (PotionType) getBasePotionTypeMethod.invoke(potionMeta);
+            } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     /**
@@ -140,7 +176,11 @@ public final class PotionUtil {
     public static void setBasePotionType(@NotNull PotionMeta potionMeta,
             @NotNull PotionType potionType, boolean extended, boolean upgraded) {
         final PotionType resolved = resolveVariant(potionType, upgraded, extended);
-        potionMeta.setBasePotionType(resolved);
+        if (setBasePotionTypeMethod != null) {
+            try {
+                setBasePotionTypeMethod.invoke(potionMeta, resolved);
+            } catch (Exception ignored) {}
+        }
     }
 
     private static @NotNull PotionType resolveVariant(@NotNull PotionType base, boolean upgraded,

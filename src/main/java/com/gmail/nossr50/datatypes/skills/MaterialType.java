@@ -18,13 +18,13 @@ public enum MaterialType {
     public Material getDefaultMaterial() {
         switch (this) {
             case STRING:
-                return Material.STRING;
+                return safeGetMaterial("STRING", "STRING");
 
             case LEATHER:
                 return Material.LEATHER;
 
             case WOOD:
-                return Material.OAK_PLANKS;
+                return safeGetMaterial("OAK_PLANKS", "WOOD");
 
             case STONE:
                 return Material.COBBLESTONE;
@@ -33,25 +33,31 @@ public enum MaterialType {
                 return Material.IRON_INGOT;
 
             case GOLD:
-                return Material.GOLD_INGOT;
+                return safeGetMaterial("GOLD_INGOT", "GOLD_INGOT");
 
             case DIAMOND:
                 return Material.DIAMOND;
 
             case NETHERITE:
-                if (Material.getMaterial("NETHERITE_SCRAP") != null) {
-                    return Material.getMaterial("NETHERITE_SCRAP");
-                } else {
-                    return Material.DIAMOND;
-                }
+                return safeGetMaterial("NETHERITE_SCRAP", "DIAMOND");
+
             case PRISMARINE:
-                return Material.PRISMARINE_CRYSTALS;
+                return safeGetMaterial("PRISMARINE_CRYSTALS", "PRISMARINE_CRYSTALS");
+
             case COPPER:
-                return Material.COPPER_INGOT;
+                return safeGetMaterial("COPPER_INGOT", "IRON_INGOT");
 
             case OTHER:
             default:
                 return null;
         }
+    }
+
+    private Material safeGetMaterial(String modernName, String fallbackName) {
+        Material material = Material.getMaterial(modernName);
+        if (material != null) {
+            return material;
+        }
+        return Material.getMaterial(fallbackName);
     }
 }

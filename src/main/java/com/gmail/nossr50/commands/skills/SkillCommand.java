@@ -175,7 +175,7 @@ public abstract class SkillCommand implements TabExecutor {
             /*
              * CHILD SKILLS
              */
-            var parents = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            List<PrimarySkillType> parents = mcMMO.p.getSkillTools().getChildSkillParents(skill);
 
             //TODO: Add JSON here
             /*player.sendMessage(parent.getName() + " - " + LocaleLoader.getString("Effects.Level.Overhaul", mmoPlayer.getSkillLevel(parent), mmoPlayer.getSkillXpLevel(parent), mmoPlayer.getXpToLevel(parent)))*/

@@ -12,6 +12,7 @@ import com.gmail.nossr50.util.skills.SkillTools;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -33,13 +34,13 @@ public class PlayerProfile {
 
     /* Skill Data */
     private final Map<PrimarySkillType, Integer> skills = new EnumMap<>(
-            PrimarySkillType.class);   // Skill & Level
+            PrimarySkillType.class); // Skill & Level
     private final Map<PrimarySkillType, Float> skillsXp = new EnumMap<>(
-            PrimarySkillType.class);     // Skill & XP
+            PrimarySkillType.class); // Skill & XP
     private final Map<SuperAbilityType, Integer> abilityDATS = new EnumMap<>(
             SuperAbilityType.class); // Ability & Cooldown
     private final Map<UniqueDataType, Integer> uniquePlayerData = new EnumMap<>(
-            UniqueDataType.class); //Misc data that doesn't fit into other categories (chimaera wing, etc..)
+            UniqueDataType.class); // Misc data that doesn't fit into other categories (chimaera wing, etc..)
 
     // Store previous XP gains for diminished returns
     private final DelayQueue<SkillXpGain> gainedSkillsXp = new DelayQueue<>();
@@ -76,8 +77,8 @@ public class PlayerProfile {
             skillsXp.put(primarySkillType, 0F);
         }
 
-        //Misc Cooldowns
-        uniquePlayerData.put(UniqueDataType.CHIMAERA_WING_DATS, 0); //Chimaera wing
+        // Misc Cooldowns
+        uniquePlayerData.put(UniqueDataType.CHIMAERA_WING_DATS, 0); // Chimaera wing
         lastLogin = System.currentTimeMillis();
     }
 
@@ -150,7 +151,8 @@ public class PlayerProfile {
             if (saveAttempts < 10) {
                 saveAttempts++;
 
-                //Back out of async saving if we detect a server shutdown, this is not always going to be caught
+                // Back out of async saving if we detect a server shutdown, this is not always
+                // going to be caught
                 if (mcMMO.isServerShutdownExecuted() || useSync) {
                     mcMMO.p.getFoliaLib().getScheduler()
                             .runNextTick(new PlayerProfileSaveTask(this, true));
@@ -171,12 +173,14 @@ public class PlayerProfile {
     }
 
     /**
-     * Get this users last login, will return current java.lang.System#currentTimeMillis() if it
+     * Get this users last login, will return current
+     * java.lang.System#currentTimeMillis() if it
      * doesn't exist
      *
      * @return the last login
-     * @deprecated This is only function for FlatFileDB atm, and it's only here for unit testing
-     * right now
+     * @deprecated This is only function for FlatFileDB atm, and it's only here for
+     *             unit testing
+     *             right now
      */
     public @NotNull Long getLastLogin() {
         return Objects.requireNonNullElse(lastLogin, -1L);
@@ -205,7 +209,8 @@ public class PlayerProfile {
     }
 
     /**
-     * Marks the profile as "dirty" which flags a profile to be saved in the next save operation
+     * Marks the profile as "dirty" which flags a profile to be saved in the next
+     * save operation
      */
     public void markProfileDirty() {
         changed = true;
@@ -261,7 +266,7 @@ public class PlayerProfile {
      * Set the current deactivation timestamp of an ability.
      *
      * @param ability The {@link SuperAbilityType} to set the DATS for
-     * @param DATS the DATS of the ability
+     * @param DATS    the DATS of the ability
      */
     protected void setAbilityDATS(SuperAbilityType ability, long DATS) {
         markProfileDirty();
@@ -323,7 +328,7 @@ public class PlayerProfile {
      * Remove Xp from a skill.
      *
      * @param skill Type of skill to modify
-     * @param xp Amount of xp to remove
+     * @param xp    Amount of xp to remove
      */
     public void removeXp(PrimarySkillType skill, int xp) {
         if (SkillTools.isChildSkill(skill)) {
@@ -358,7 +363,7 @@ public class PlayerProfile {
 
         markProfileDirty();
 
-        //Don't allow levels to be negative
+        // Don't allow levels to be negative
         if (level < 0) {
             level = 0;
         }
@@ -370,7 +375,7 @@ public class PlayerProfile {
     /**
      * Add levels to a skill.
      *
-     * @param skill Type of skill to add levels to
+     * @param skill  Type of skill to add levels to
      * @param levels Number of levels to add
      */
     public void addLevels(PrimarySkillType skill, int levels) {
@@ -381,13 +386,13 @@ public class PlayerProfile {
      * Add Experience to a skill.
      *
      * @param skill Type of skill to add experience to
-     * @param xp Number of experience to add
+     * @param xp    Number of experience to add
      */
     public void addXp(PrimarySkillType skill, float xp) {
         markProfileDirty();
 
         if (SkillTools.isChildSkill(skill)) {
-            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            List<PrimarySkillType> parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
             float dividedXP = (xp / parentSkills.size());
 
             for (PrimarySkillType parentSkill : parentSkills) {
@@ -399,7 +404,8 @@ public class PlayerProfile {
     }
 
     /**
-     * Get the registered amount of experience gained This is used for diminished XP returns
+     * Get the registered amount of experience gained This is used for diminished XP
+     * returns
      *
      * @return xp Experience amount registered
      */
@@ -417,7 +423,7 @@ public class PlayerProfile {
      * Register an experience gain This is used for diminished XP returns
      *
      * @param primarySkillType Skill being used
-     * @param xp Experience amount to add
+     * @param xp               Experience amount to add
      */
     public void registerXpGain(PrimarySkillType primarySkillType, float xp) {
         gainedSkillsXp.add(new SkillXpGain(primarySkillType, xp));
@@ -425,7 +431,8 @@ public class PlayerProfile {
     }
 
     /**
-     * Remove experience gains older than a given time This is used for diminished XP returns
+     * Remove experience gains older than a given time This is used for diminished
+     * XP returns
      */
     public void purgeExpiredXpGains() {
         SkillXpGain gain;
@@ -447,7 +454,8 @@ public class PlayerProfile {
         }
 
         int level = (ExperienceConfig.getInstance().getCumulativeCurveEnabled())
-                ? UserManager.getPlayer(playerName).getPowerLevel() : skills.get(primarySkillType);
+                ? UserManager.getPlayer(playerName).getPowerLevel()
+                : skills.get(primarySkillType);
         FormulaType formulaType = ExperienceConfig.getInstance().getFormulaType();
 
         return mcMMO.getFormulaManager().getXPtoNextLevel(level, formulaType);

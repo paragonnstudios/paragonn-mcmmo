@@ -12,6 +12,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.skills.SkillTools;
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -118,11 +119,34 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     public static final int DATA_ENTRY_COUNT = COOLDOWN_SPEARS + 1;
 
     // Maps for cleaner parsing of skills / XP / cooldowns
-    private record SkillIndex(PrimarySkillType type, int index) {}
-    private record AbilityIndex(SuperAbilityType type, int index) {}
+    private static final class SkillIndex {
+        private final PrimarySkillType type;
+        private final int index;
+
+        private SkillIndex(PrimarySkillType type, int index) {
+            this.type = type;
+            this.index = index;
+        }
+
+        public PrimarySkillType type() { return type; }
+        public int index() { return index; }
+    }
+
+    private static final class AbilityIndex {
+        private final SuperAbilityType type;
+        private final int index;
+
+        private AbilityIndex(SuperAbilityType type, int index) {
+            this.type = type;
+            this.index = index;
+        }
+
+        public SuperAbilityType type() { return type; }
+        public int index() { return index; }
+    }
 
     // All skill-level columns
-    private static final List<SkillIndex> SKILL_LEVEL_INDICES = List.of(
+    private static final List<SkillIndex> SKILL_LEVEL_INDICES = ImmutableList.of(
             new SkillIndex(PrimarySkillType.ACROBATICS, SKILLS_ACROBATICS),
             new SkillIndex(PrimarySkillType.TAMING, SKILLS_TAMING),
             new SkillIndex(PrimarySkillType.MINING, SKILLS_MINING),
@@ -143,7 +167,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     );
 
     // All skill XP columns
-    private static final List<SkillIndex> SKILL_XP_INDICES = List.of(
+    private static final List<SkillIndex> SKILL_XP_INDICES = ImmutableList.of(
             new SkillIndex(PrimarySkillType.TAMING, EXP_TAMING),
             new SkillIndex(PrimarySkillType.MINING, EXP_MINING),
             new SkillIndex(PrimarySkillType.REPAIR, EXP_REPAIR),
@@ -164,7 +188,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     );
 
     // All ability cooldown columns
-    private static final List<AbilityIndex> ABILITY_COOLDOWN_INDICES = List.of(
+    private static final List<AbilityIndex> ABILITY_COOLDOWN_INDICES = ImmutableList.of(
             new AbilityIndex(SuperAbilityType.SUPER_BREAKER, COOLDOWN_SUPER_BREAKER),
             new AbilityIndex(SuperAbilityType.TREE_FELLER, COOLDOWN_TREE_FELLER),
             new AbilityIndex(SuperAbilityType.BERSERK, COOLDOWN_BERSERK),
@@ -560,11 +584,16 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     }
 
     private @NotNull PlayerProfile processUserQuery(@NotNull UserQuery userQuery) {
-        return switch (userQuery.getType()) {
-            case UUID_AND_NAME -> queryByUUIDAndName((UserQueryFull) userQuery);
-            case UUID -> queryByUUID((UserQueryUUID) userQuery);
-            case NAME -> queryByName((UserQueryNameImpl) userQuery);
-        };
+        switch (userQuery.getType()) {
+            case UUID_AND_NAME:
+                return queryByUUIDAndName((UserQueryFull) userQuery);
+            case UUID:
+                return queryByUUID((UserQueryUUID) userQuery);
+            case NAME:
+                return queryByName((UserQueryNameImpl) userQuery);
+            default:
+                throw new IllegalStateException("Unknown query type: " + userQuery.getType());
+        }
     }
 
     private @NotNull PlayerProfile queryByName(@NotNull UserQueryName userQuery) {
@@ -922,7 +951,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
                 (primarySkillType == null) ? powerLevels : leaderboardMap.get(primarySkillType);
 
         if (statsList == null) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         int fromIndex = (Math.max(pageNumber, 1) - 1) * statsPerPage;
@@ -1258,8 +1287,23 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         out.append(IGNORED).append(':');
     }
 
-    private record FlatFileRow(String rawLine, String[] fields, String username,
-                               @Nullable UUID uuid) {
+    private static class FlatFileRow {
+        private final String rawLine;
+        private final String[] fields;
+        private final String username;
+        private final @Nullable UUID uuid;
+
+        public FlatFileRow(String rawLine, String[] fields, String username, @Nullable UUID uuid) {
+            this.rawLine = rawLine;
+            this.fields = fields;
+            this.username = username;
+            this.uuid = uuid;
+        }
+
+        public String rawLine() { return rawLine; }
+        public String[] fields() { return fields; }
+        public String username() { return username; }
+        public @Nullable UUID uuid() { return uuid; }
 
         static @Nullable FlatFileRow parse(@NotNull String line,
                     @NotNull Logger logger,

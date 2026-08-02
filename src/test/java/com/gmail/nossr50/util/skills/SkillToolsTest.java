@@ -67,7 +67,7 @@ class SkillToolsTest {
     }
 
     private SkillTools newSkillToolsForVersion(int major, int minor, int patch) throws Exception {
-        var mockGameVersion = mock(MinecraftGameVersion.class);
+        MinecraftGameVersion mockGameVersion = mock(MinecraftGameVersion.class);
         when(mockGameVersion.isAtLeast(major, minor, patch))
                 .thenReturn(true);
         when(mcMMO.getMinecraftGameVersion()).thenReturn(mockGameVersion);

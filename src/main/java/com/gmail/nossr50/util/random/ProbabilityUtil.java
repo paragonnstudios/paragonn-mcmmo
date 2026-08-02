@@ -79,15 +79,16 @@ public class ProbabilityUtil {
     @VisibleForTesting
     static Probability getStaticRandomChance(@NotNull SubSkillType subSkillType)
             throws InvalidStaticChance {
-        return switch (subSkillType) {
-            case AXES_ARMOR_IMPACT ->
-                    Probability.ofPercent(mcMMO.p.getAdvancedConfig().getImpactChance());
-            case AXES_GREATER_IMPACT ->
-                    Probability.ofPercent(mcMMO.p.getAdvancedConfig().getGreaterImpactChance());
-            case TAMING_FAST_FOOD_SERVICE ->
-                    Probability.ofPercent(mcMMO.p.getAdvancedConfig().getFastFoodChance());
-            default -> throw new InvalidStaticChance();
-        };
+        switch (subSkillType) {
+            case AXES_ARMOR_IMPACT:
+                return Probability.ofPercent(mcMMO.p.getAdvancedConfig().getImpactChance());
+            case AXES_GREATER_IMPACT:
+                return Probability.ofPercent(mcMMO.p.getAdvancedConfig().getGreaterImpactChance());
+            case TAMING_FAST_FOOD_SERVICE:
+                return Probability.ofPercent(mcMMO.p.getAdvancedConfig().getFastFoodChance());
+            default:
+                throw new InvalidStaticChance();
+        }
     }
 
     static SkillProbabilityType getProbabilityType(@NotNull SubSkillType subSkillType) {

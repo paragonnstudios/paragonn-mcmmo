@@ -143,9 +143,11 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDamageByEntityHighest(EntityDamageByEntityEvent event) {
         // we only care about players as this is for fixing player death messages
-        if (!(event.getEntity() instanceof Player player)) {
+        if (!(event.getEntity() instanceof Player)) {
             return;
         }
+
+        Player player = (Player) event.getEntity();
 
         // get the attacker
         LivingEntity attacker;
@@ -440,7 +442,8 @@ public class PlayerListener implements Listener {
                     && fishingManager.isFishingTooOften()) {
                 event.setExpToDrop(0);
 
-                if (caught instanceof Item caughtItem) {
+                if (caught instanceof Item) {
+                    Item caughtItem = (Item) caught;
                     caughtItem.remove();
                 }
 
@@ -478,7 +481,8 @@ public class PlayerListener implements Listener {
                 }
                 return;
             case CAUGHT_FISH:
-                if (caught instanceof Item caughtItem) {
+                if (caught instanceof Item) {
+                    Item caughtItem = (Item) caught;
                     if (ExperienceConfig.getInstance().isFishingExploitingPrevented()) {
 
                         fishingManager.processExploiting(event.getHook().getLocation().toVector());
@@ -527,7 +531,8 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        if (event.getEntity() instanceof Player player) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
 
             /* WORLD GUARD MAIN FLAG CHECK */
             if (WorldGuardUtils.isWorldGuardLoaded()) {
@@ -1088,7 +1093,8 @@ public class PlayerListener implements Listener {
          *  We can check for an instance instead of EntityType here, so we are
          *  ready for the infamous "Glow Item Frame" in 1.17 too!
          */
-        if (event.getRightClicked() instanceof ItemFrame frame) {
+        if (event.getRightClicked() instanceof ItemFrame) {
+            ItemFrame frame = (ItemFrame) event.getRightClicked();
 
             // Check for existing items (ignore rotations)
             if (frame.getItem().getType() != Material.AIR) {

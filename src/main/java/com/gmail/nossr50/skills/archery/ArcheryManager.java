@@ -16,6 +16,7 @@ import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -127,7 +128,7 @@ public class ArcheryManager extends SkillManager {
             // Spigot: schedule teleport for next tick — teleports during damage events are ignored
             final Location dazedLocation = defender.getLocation();
             dazedLocation.setPitch(randomPitch);
-            final var originalWorld = dazedLocation.getWorld();
+            final World originalWorld = dazedLocation.getWorld();
             mcMMO.p.getFoliaLib().getScheduler().runAtEntity(
                     defender, task -> {
                         if (defender.isValid()

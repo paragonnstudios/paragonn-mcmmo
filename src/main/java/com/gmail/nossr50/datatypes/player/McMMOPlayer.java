@@ -62,6 +62,7 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -75,7 +76,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -83,7 +84,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 public class McMMOPlayer implements Identified {
     private final @NotNull Identity identity;
 
-    //Hacky fix for now, redesign later
+    // Hacky fix for now, redesign later
     private final @NotNull PlayerAuthor playerAuthor;
 
     private final Player player;
@@ -105,7 +106,7 @@ public class McMMOPlayer implements Identified {
 
     private boolean abilityUse = true;
     private boolean godMode;
-    private boolean chatSpy = false; //Off by default
+    private boolean chatSpy = false; // Off by default
 
     private ChatChannel chatChannel;
 
@@ -120,7 +121,7 @@ public class McMMOPlayer implements Identified {
     private int respawnATS;
     private int teleportATS;
     private long databaseATS;
-    //private int chimeraWingLastUse;
+    // private int chimeraWingLastUse;
     private Location teleportCommence;
 
     private boolean isUsingUnarmed;
@@ -157,7 +158,7 @@ public class McMMOPlayer implements Identified {
 
         experienceBarManager = new ExperienceBarManager(this);
 
-        debugMode = false; //Debug mode helps solve support issues, players can toggle it on or off
+        debugMode = false; // Debug mode helps solve support issues, players can toggle it on or off
 
         this.playerAuthor = new PlayerAuthor(player);
 
@@ -175,36 +176,79 @@ public class McMMOPlayer implements Identified {
             } catch (InvalidSkillException e) {
                 mcMMO.p.getLogger().log(Level.SEVERE,
                         "Invalid skill while initializing skill managers for player "
-                        + player.getName()
-                        + ". Contact the plugin developers.", e);
+                                + player.getName()
+                                + ". Contact the plugin developers.",
+                        e);
             }
         }
     }
 
     private void initManager(PrimarySkillType primarySkillType) throws InvalidSkillException {
-        final SkillManager manager = switch (primarySkillType) {
-            case ACROBATICS -> new AcrobaticsManager(this);
-            case ALCHEMY -> new AlchemyManager(this);
-            case ARCHERY -> new ArcheryManager(this);
-            case AXES -> new AxesManager(this);
-            case CROSSBOWS -> new CrossbowsManager(this);
-            case EXCAVATION -> new ExcavationManager(this);
-            case FISHING -> new FishingManager(this);
-            case HERBALISM -> new HerbalismManager(this);
-            case MINING -> new MiningManager(this);
-            case REPAIR -> new RepairManager(this);
-            case SALVAGE -> new SalvageManager(this);
-            case SMELTING -> new SmeltingManager(this);
-            case SWORDS -> new SwordsManager(this);
-            case TAMING -> new TamingManager(this);
-            case TRIDENTS -> new TridentsManager(this);
-            case UNARMED -> new UnarmedManager(this);
-            case WOODCUTTING -> new WoodcuttingManager(this);
-            case MACES -> new MacesManager(this);
-            case SPEARS -> mcMMO.getMinecraftGameVersion().isAtLeast(1, 21, 11)
-                    ? new SpearsManager(this)
-                    : null;
-        };
+        SkillManager manager;
+        switch (primarySkillType) {
+            case ACROBATICS:
+                manager = new AcrobaticsManager(this);
+                break;
+            case ALCHEMY:
+                manager = new AlchemyManager(this);
+                break;
+            case ARCHERY:
+                manager = new ArcheryManager(this);
+                break;
+            case AXES:
+                manager = new AxesManager(this);
+                break;
+            case CROSSBOWS:
+                manager = new CrossbowsManager(this);
+                break;
+            case EXCAVATION:
+                manager = new ExcavationManager(this);
+                break;
+            case FISHING:
+                manager = new FishingManager(this);
+                break;
+            case HERBALISM:
+                manager = new HerbalismManager(this);
+                break;
+            case MINING:
+                manager = new MiningManager(this);
+                break;
+            case REPAIR:
+                manager = new RepairManager(this);
+                break;
+            case SALVAGE:
+                manager = new SalvageManager(this);
+                break;
+            case SMELTING:
+                manager = new SmeltingManager(this);
+                break;
+            case SWORDS:
+                manager = new SwordsManager(this);
+                break;
+            case TAMING:
+                manager = new TamingManager(this);
+                break;
+            case TRIDENTS:
+                manager = new TridentsManager(this);
+                break;
+            case UNARMED:
+                manager = new UnarmedManager(this);
+                break;
+            case WOODCUTTING:
+                manager = new WoodcuttingManager(this);
+                break;
+            case MACES:
+                manager = new MacesManager(this);
+                break;
+            case SPEARS:
+                manager = mcMMO.getMinecraftGameVersion().isAtLeast(1, 21, 11)
+                        ? new SpearsManager(this)
+                        : null;
+                break;
+            default:
+                manager = null;
+                break;
+        }
 
         if (manager != null) {
             skillManagers.put(primarySkillType, manager);
@@ -233,7 +277,7 @@ public class McMMOPlayer implements Identified {
 
     public void processPostXpEvent(PrimarySkillType primarySkillType, Plugin plugin,
             XPGainSource xpGainSource) {
-        //Check if they've reached the power level cap just now
+        // Check if they've reached the power level cap just now
         if (hasReachedPowerLevelCap()) {
             NotificationManager.sendPlayerInformationChatOnly(player, "LevelCap.PowerLevel",
                     String.valueOf(mcMMO.p.getGeneralConfig().getPowerLevelCap()));
@@ -243,13 +287,13 @@ public class McMMOPlayer implements Identified {
                     mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType));
         }
 
-        //Updates from Party sources
+        // Updates from Party sources
         if (xpGainSource == XPGainSource.PARTY_MEMBERS && !ExperienceConfig.getInstance()
                 .isPartyExperienceBarsEnabled()) {
             return;
         }
 
-        //Updates from passive sources (Alchemy, Smelting, etc...)
+        // Updates from passive sources (Alchemy, Smelting, etc...)
         if (xpGainSource == XPGainSource.PASSIVE && !ExperienceConfig.getInstance()
                 .isPassiveGainsExperienceBarsEnabled()) {
             return;
@@ -264,7 +308,7 @@ public class McMMOPlayer implements Identified {
     }
 
     public void updateXPBar(PrimarySkillType primarySkillType, Plugin plugin) {
-        //XP BAR UPDATES
+        // XP BAR UPDATES
         experienceBarManager.updateExperienceBar(primarySkillType, plugin);
     }
 
@@ -387,7 +431,7 @@ public class McMMOPlayer implements Identified {
     /**
      * Set the mode of an ability.
      *
-     * @param ability The ability to check
+     * @param ability  The ability to check
      * @param isActive True if the ability is active, false otherwise
      */
     public void setAbilityMode(SuperAbilityType ability, boolean isActive) {
@@ -408,7 +452,7 @@ public class McMMOPlayer implements Identified {
     /**
      * Set the informed state of an ability.
      *
-     * @param ability The ability to check
+     * @param ability    The ability to check
      * @param isInformed True if the ability is informed, false otherwise
      */
     public void setAbilityInformed(SuperAbilityType ability, boolean isInformed) {
@@ -449,7 +493,7 @@ public class McMMOPlayer implements Identified {
     /**
      * Set the current prep mode of a tool.
      *
-     * @param tool Tool to set the mode for
+     * @param tool       Tool to set the mode for
      * @param isPrepared true if the tool should be prepped, false otherwise
      */
     public void setToolPreparationMode(ToolType tool, boolean isPrepared) {
@@ -591,7 +635,8 @@ public class McMMOPlayer implements Identified {
     }
 
     /**
-     * Whether a player is level capped If they are at the power level cap, this will return true,
+     * Whether a player is level capped If they are at the power level cap, this
+     * will return true,
      * otherwise it checks their skill level
      *
      * @param primarySkillType
@@ -607,7 +652,8 @@ public class McMMOPlayer implements Identified {
     }
 
     /**
-     * Whether a player is power level capped Compares their power level total to the current set
+     * Whether a player is power level capped Compares their power level total to
+     * the current set
      * limit
      *
      * @return true if they have reached the power level cap
@@ -617,11 +663,12 @@ public class McMMOPlayer implements Identified {
     }
 
     /**
-     * Begins an experience gain. The amount will be affected by skill modifiers, global rate,
+     * Begins an experience gain. The amount will be affected by skill modifiers,
+     * global rate,
      * perks, and may be shared with the party
      *
      * @param skill Skill being used
-     * @param xp Experience amount to process
+     * @param xp    Experience amount to process
      */
     public void beginXpGain(PrimarySkillType skill, float xp, XPGainReason xpGainReason,
             XPGainSource xpGainSource) {
@@ -630,7 +677,7 @@ public class McMMOPlayer implements Identified {
         }
 
         if (SkillTools.isChildSkill(skill)) {
-            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            List<PrimarySkillType> parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
             float splitXp = xp / parentSkills.size();
 
             for (PrimarySkillType parentSkill : parentSkills) {
@@ -652,11 +699,12 @@ public class McMMOPlayer implements Identified {
     }
 
     /**
-     * Begins an experience gain. The amount will be affected by skill modifiers, global rate and
+     * Begins an experience gain. The amount will be affected by skill modifiers,
+     * global rate and
      * perks
      *
      * @param skill Skill being used
-     * @param xp Experience amount to process
+     * @param xp    Experience amount to process
      */
     public void beginUnsharedXpGain(PrimarySkillType skill, float xp, XPGainReason xpGainReason,
             XPGainSource xpGainSource) {
@@ -681,7 +729,7 @@ public class McMMOPlayer implements Identified {
      * Applies an experience gain
      *
      * @param primarySkillType Skill being used
-     * @param xp Experience amount to add
+     * @param xp               Experience amount to add
      */
     public void applyXpGain(PrimarySkillType primarySkillType, float xp, XPGainReason xpGainReason,
             XPGainSource xpGainSource) {
@@ -695,7 +743,7 @@ public class McMMOPlayer implements Identified {
         xp = mmoPlayerPreXpGainEvent.getXpGained();
 
         if (SkillTools.isChildSkill(primarySkillType)) {
-            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(primarySkillType);
+            List<PrimarySkillType> parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(primarySkillType);
 
             for (PrimarySkillType parentSkill : parentSkills) {
                 applyXpGain(parentSkill, xp / parentSkills.size(), xpGainReason, xpGainSource);
@@ -757,7 +805,7 @@ public class McMMOPlayer implements Identified {
         NotificationManager.sendPlayerLevelUpNotification(this, primarySkillType, levelsGained,
                 profile.getSkillLevel(primarySkillType));
 
-        //UPDATE XP BARS
+        // UPDATE XP BARS
         processPostXpEvent(primarySkillType, mcMMO.p, xpGainSource);
     }
 
@@ -865,21 +913,23 @@ public class McMMOPlayer implements Identified {
      * Modifies an experience gain using skill modifiers, global rate and perks
      *
      * @param primarySkillType Skill being used
-     * @param xp Experience amount to process
+     * @param xp               Experience amount to process
      * @return Modified experience
      */
     @VisibleForTesting
     float modifyXpGain(PrimarySkillType primarySkillType, float xp) {
-        //TODO: A rare situation can occur where the default Power Level cap can prevent a player with one skill edited to something silly like Integer.MAX_VALUE from gaining XP in any skill, we may need to represent power level with another data type
+        // TODO: A rare situation can occur where the default Power Level cap can
+        // prevent a player with one skill edited to something silly like
+        // Integer.MAX_VALUE from gaining XP in any skill, we may need to represent
+        // power level with another data type
         if ((mcMMO.p.getSkillTools().getLevelCap(primarySkillType) <= getSkillLevel(
                 primarySkillType))
                 || (mcMMO.p.getGeneralConfig().getPowerLevelCap() <= getPowerLevel())) {
             return 0;
         }
 
-        xp = (float) (
-                (xp * ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType))
-                        * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier());
+        xp = (float) ((xp * ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType))
+                * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier());
 
         return PerksUtils.handleXpPerks(player, xp, primarySkillType);
     }
@@ -914,13 +964,15 @@ public class McMMOPlayer implements Identified {
             return;
         }
 
-        //TODO: This is hacky and temporary solution until skills are move to the new system
-        //Potential problems with this include skills with two super abilities (ie mining)
+        // TODO: This is hacky and temporary solution until skills are move to the new
+        // system
+        // Potential problems with this include skills with two super abilities (ie
+        // mining)
         if (!RankUtils.hasUnlockedSubskill(player, subSkillType)) {
             int diff = RankUtils.getSuperAbilityUnlockRequirement(superAbilityType) - getSkillLevel(
                     primarySkillType);
 
-            //Inform the player they are not yet skilled enough
+            // Inform the player they are not yet skilled enough
             NotificationManager.sendPlayerInformation(player, NotificationType.ABILITY_COOLDOWN,
                     "Skills.AbilityGateRequirementFail", String.valueOf(diff),
                     mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType));
@@ -938,7 +990,7 @@ public class McMMOPlayer implements Identified {
                     || primarySkillType == PrimarySkillType.AXES) {
                 NotificationManager.sendPlayerInformation(player, NotificationType.ABILITY_COOLDOWN,
                         "Skills.TooTired", String.valueOf(timeRemaining));
-                //SoundManager.sendSound(player, player.getLocation(), SoundType.TIRED);
+                // SoundManager.sendSound(player, player.getLocation(), SoundType.TIRED);
             }
 
             return;
@@ -948,17 +1000,18 @@ public class McMMOPlayer implements Identified {
             return;
         }
 
-        //These values change depending on whether the server is in retro mode
+        // These values change depending on whether the server is in retro mode
         int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
         int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
 
         int ticks;
 
-        //Ability cap of 0 or below means no cap
+        // Ability cap of 0 or below means no cap
         if (abilityLengthCap > 0) {
             ticks = PerksUtils.handleActivationPerks(player,
                     2 + (Math.min(abilityLengthCap, getSkillLevel(primarySkillType))
-                            / abilityLengthVar), superAbilityType.getMaxLength());
+                            / abilityLengthVar),
+                    superAbilityType.getMaxLength());
         } else {
             ticks = PerksUtils.handleActivationPerks(player,
                     2 + (getSkillLevel(primarySkillType) / abilityLengthVar),
@@ -968,7 +1021,7 @@ public class McMMOPlayer implements Identified {
         if (useChatNotifications()) {
             NotificationManager.sendPlayerInformation(player, NotificationType.SUPER_ABILITY,
                     superAbilityType.getAbilityOn());
-            //player.sendMessage(ability.getAbilityOn());
+            // player.sendMessage(ability.getAbilityOn());
         }
 
         if (mcMMO.p.getAdvancedConfig().sendAbilityNotificationToOtherPlayers()) {
@@ -976,11 +1029,12 @@ public class McMMOPlayer implements Identified {
                     superAbilityType.getAbilityPlayer());
         }
 
-        //Sounds
+        // Sounds
         SoundManager.worldSendSound(player.getWorld(), player.getLocation(),
                 SoundType.ABILITY_ACTIVATED_GENERIC);
 
-        //If the current item is still buffed somehow, remove it to prevent enchantments from stacking.
+        // If the current item is still buffed somehow, remove it to prevent
+        // enchantments from stacking.
         if (superAbilityType == SuperAbilityType.SUPER_BREAKER
                 || superAbilityType == SuperAbilityType.GIGA_DRILL_BREAKER) {
             SkillUtils.removeAbilityBuff(player.getInventory().getItemInMainHand());
@@ -1029,7 +1083,8 @@ public class McMMOPlayer implements Identified {
 
         /*
          * Woodcutting & Axes need to be treated differently.
-         * Basically the tool always needs to ready and we check to see if the cooldown is over when the user takes action
+         * Basically the tool always needs to ready and we check to see if the cooldown
+         * is over when the user takes action
          */
         if (tool.inHand(inHand) && !getToolPreparationMode(tool)) {
             if (primarySkillType != PrimarySkillType.WOODCUTTING
@@ -1057,7 +1112,7 @@ public class McMMOPlayer implements Identified {
                             tool.getRaiseTool());
                 }
 
-                //Send Sound
+                // Send Sound
                 SoundManager.sendSound(player, player.getLocation(), SoundType.TOOL_READY);
             }
 
@@ -1137,14 +1192,14 @@ public class McMMOPlayer implements Identified {
      */
     public int calculateTimeRemaining(SuperAbilityType ability) {
         long deactivatedTimestamp = profile.getAbilityDATS(ability) * Misc.TIME_CONVERSION_FACTOR;
-        return (int) (((deactivatedTimestamp + (
-                PerksUtils.handleCooldownPerks(player, ability.getCooldown())
-                        * Misc.TIME_CONVERSION_FACTOR)) - System.currentTimeMillis())
+        return (int) (((deactivatedTimestamp + (PerksUtils.handleCooldownPerks(player, ability.getCooldown())
+                * Misc.TIME_CONVERSION_FACTOR)) - System.currentTimeMillis())
                 / Misc.TIME_CONVERSION_FACTOR);
     }
 
     /*
-     * These functions are wrapped from PlayerProfile so that we don't always have to store it alongside the McMMOPlayer object.
+     * These functions are wrapped from PlayerProfile so that we don't always have
+     * to store it alongside the McMMOPlayer object.
      */
     public int getSkillLevel(PrimarySkillType skill) {
         return profile.getSkillLevel(skill);
@@ -1203,8 +1258,7 @@ public class McMMOPlayer implements Identified {
         final Player thisPlayer = getPlayer();
         if (getPlayer() != null && getPlayer().hasMetadata(
                 MetadataConstants.METADATA_KEY_RUPTURE)) {
-            final RuptureTaskMeta ruptureTaskMeta
-                    = (RuptureTaskMeta) getPlayer().getMetadata(
+            final RuptureTaskMeta ruptureTaskMeta = (RuptureTaskMeta) getPlayer().getMetadata(
                     MetadataConstants.METADATA_KEY_RUPTURE).get(0);
             if (ruptureTaskMeta != null) {
                 final RuptureTask ruptureTimerTask = ruptureTaskMeta.getRuptureTimerTask();
@@ -1233,12 +1287,13 @@ public class McMMOPlayer implements Identified {
             party.removeOnlineMember(thisPlayer);
         }
 
-        //Remove user from cache
+        // Remove user from cache
         mcMMO.getDatabaseManager().cleanupUser(thisPlayer.getUniqueId());
     }
 
     /**
-     * Cleanup various things related to this player Such as temporary summons.. Turning off
+     * Cleanup various things related to this player Such as temporary summons..
+     * Turning off
      * abilities... Etc...
      */
     public void cleanup() {
@@ -1252,13 +1307,13 @@ public class McMMOPlayer implements Identified {
      * @return this players identity
      */
     @Override
-    public @NonNull Identity identity() {
+    public @NotNull Identity identity() {
         return identity;
     }
 
-
     /**
-     * The {@link com.gmail.nossr50.chat.author.Author} for this player, used by mcMMO chat
+     * The {@link com.gmail.nossr50.chat.author.Author} for this player, used by
+     * mcMMO chat
      *
      * @return the {@link com.gmail.nossr50.chat.author.Author} for this player
      */

@@ -410,9 +410,11 @@ public class Party {
             return false;
         }
 
-        if (!(obj instanceof Party other)) {
+        if (!(obj instanceof Party)) {
             return false;
         }
+
+        Party other = (Party) obj;
 
         if ((this.getName() == null) || (other.getName() == null)) {
             return false;

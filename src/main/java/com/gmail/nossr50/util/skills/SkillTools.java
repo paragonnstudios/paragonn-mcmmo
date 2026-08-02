@@ -90,7 +90,7 @@ public class SkillTools {
          * Setup ability -> primary map
          * Setup primary -> ability map
          */
-        var abilityMaps = buildSuperAbilityMaps();
+        SuperAbilityMaps abilityMaps = buildSuperAbilityMaps();
         this.superAbilityParentRelationshipMap = abilityMaps.superAbilityParentRelationshipMap();
         this.mainActivatedAbilityChildMap = abilityMaps.mainActivatedAbilityChildMap();
 
@@ -196,9 +196,24 @@ public class SkillTools {
      * Holder for the two super ability maps, so we can build them in one pass.
      */
     @VisibleForTesting
-    record SuperAbilityMaps(
-            @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap,
-            @NotNull ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap) {
+    public static final class SuperAbilityMaps {
+        private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
+        private final @NotNull ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
+
+        public SuperAbilityMaps(
+                @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap,
+                @NotNull ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap) {
+            this.superAbilityParentRelationshipMap = superAbilityParentRelationshipMap;
+            this.mainActivatedAbilityChildMap = mainActivatedAbilityChildMap;
+        }
+
+        public @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap() {
+            return superAbilityParentRelationshipMap;
+        }
+
+        public @NotNull ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap() {
+            return mainActivatedAbilityChildMap;
+        }
     }
 
     @VisibleForTesting
@@ -281,20 +296,35 @@ public class SkillTools {
     }
 
     private @NotNull PrimarySkillType getSuperAbilityParent(SuperAbilityType superAbilityType) {
-        return switch (superAbilityType) {
-            case BERSERK -> PrimarySkillType.UNARMED;
-            case GREEN_TERRA -> PrimarySkillType.HERBALISM;
-            case TREE_FELLER -> PrimarySkillType.WOODCUTTING;
-            case SUPER_BREAKER, BLAST_MINING -> PrimarySkillType.MINING;
-            case SKULL_SPLITTER -> PrimarySkillType.AXES;
-            case SERRATED_STRIKES -> PrimarySkillType.SWORDS;
-            case GIGA_DRILL_BREAKER -> PrimarySkillType.EXCAVATION;
-            case SUPER_SHOTGUN -> PrimarySkillType.CROSSBOWS;
-            case TRIDENTS_SUPER_ABILITY -> PrimarySkillType.TRIDENTS;
-            case EXPLOSIVE_SHOT -> PrimarySkillType.ARCHERY;
-            case MACES_SUPER_ABILITY -> PrimarySkillType.MACES;
-            case SPEARS_SUPER_ABILITY -> PrimarySkillType.SPEARS;
-        };
+        switch (superAbilityType) {
+            case BERSERK:
+                return PrimarySkillType.UNARMED;
+            case GREEN_TERRA:
+                return PrimarySkillType.HERBALISM;
+            case TREE_FELLER:
+                return PrimarySkillType.WOODCUTTING;
+            case SUPER_BREAKER:
+            case BLAST_MINING:
+                return PrimarySkillType.MINING;
+            case SKULL_SPLITTER:
+                return PrimarySkillType.AXES;
+            case SERRATED_STRIKES:
+                return PrimarySkillType.SWORDS;
+            case GIGA_DRILL_BREAKER:
+                return PrimarySkillType.EXCAVATION;
+            case SUPER_SHOTGUN:
+                return PrimarySkillType.CROSSBOWS;
+            case TRIDENTS_SUPER_ABILITY:
+                return PrimarySkillType.TRIDENTS;
+            case EXPLOSIVE_SHOT:
+                return PrimarySkillType.ARCHERY;
+            case MACES_SUPER_ABILITY:
+                return PrimarySkillType.MACES;
+            case SPEARS_SUPER_ABILITY:
+                return PrimarySkillType.SPEARS;
+            default:
+                throw new IllegalArgumentException("Unknown ability type: " + superAbilityType);
+        }
     }
 
     /**
@@ -441,10 +471,13 @@ public class SkillTools {
     }
 
     public static boolean isChildSkill(PrimarySkillType primarySkillType) {
-        return switch (primarySkillType) {
-            case SALVAGE, SMELTING -> true;
-            default -> false;
-        };
+        switch (primarySkillType) {
+            case SALVAGE:
+            case SMELTING:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -519,11 +552,14 @@ public class SkillTools {
 
     public @NotNull ImmutableList<PrimarySkillType> getChildSkillParents(
             PrimarySkillType childSkill) throws IllegalArgumentException {
-        return switch (childSkill) {
-            case SALVAGE -> SALVAGE_PARENTS;
-            case SMELTING -> SMELTING_PARENTS;
-            default -> throw new IllegalArgumentException(
-                    "Skill " + childSkill + " is not a child skill");
-        };
+        switch (childSkill) {
+            case SALVAGE:
+                return SALVAGE_PARENTS;
+            case SMELTING:
+                return SMELTING_PARENTS;
+            default:
+                throw new IllegalArgumentException(
+                        "Skill " + childSkill + " is not a child skill");
+        }
     }
 }

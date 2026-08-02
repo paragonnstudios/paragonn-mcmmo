@@ -166,10 +166,14 @@ class SQLDatabaseManagerTest {
     }
 
     private JdbcDatabaseContainer<?> containerFor(DbFlavor flavor) {
-        return switch (flavor) {
-            case MYSQL -> MYSQL_CONTAINER;
-            case MARIADB -> MARIADB_CONTAINER;
-        };
+        switch (flavor) {
+            case MYSQL:
+                return MYSQL_CONTAINER;
+            case MARIADB:
+                return MARIADB_CONTAINER;
+            default:
+                throw new IllegalArgumentException("Unknown flavor: " + flavor);
+        }
     }
 
     /**
@@ -557,7 +561,7 @@ class SQLDatabaseManagerTest {
             }
 
             // WHEN retrieving stored users
-            var storedUsers = databaseManager.getStoredUsers();
+            List<String> storedUsers = databaseManager.getStoredUsers();
 
             // THEN all created usernames should be present
             assertThat(storedUsers)
@@ -677,7 +681,7 @@ class SQLDatabaseManagerTest {
             }
 
             // AND getStoredUsers still contains both names
-            var storedUsers = databaseManager.getStoredUsers();
+            List<String> storedUsers = databaseManager.getStoredUsers();
             assertThat(storedUsers).contains(firstUsername, secondUsername);
         } finally {
             databaseManager.onDisable();

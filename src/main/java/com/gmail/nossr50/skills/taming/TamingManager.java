@@ -279,7 +279,8 @@ public class TamingManager extends SkillManager {
                         target.getMaxHealth()));
 
         // Bred mules & donkeys can actually have horse-like stats, but llamas cannot.
-        if (beast instanceof AbstractHorse horseLikeCreature && !(beast instanceof Llama)) {
+        if (beast instanceof AbstractHorse && !(beast instanceof Llama)) {
+            AbstractHorse horseLikeCreature = (AbstractHorse) beast;
             AttributeInstance jumpAttribute = horseLikeCreature.getAttribute(MAPPED_JUMP_STRENGTH);
 
             if (jumpAttribute != null) {
@@ -322,7 +323,8 @@ public class TamingManager extends SkillManager {
         ParticleEffectUtils.playGreaterImpactEffect(target);
         target.setVelocity(wolf.getLocation().getDirection().normalize().multiply(1.5D));
 
-        if (target instanceof Player defender) {
+        if (target instanceof Player) {
+            Player defender = (Player) target;
 
             if (NotificationManager.doesPlayerUseNotifications(defender)) {
                 NotificationManager.sendPlayerInformation(defender,
@@ -332,7 +334,8 @@ public class TamingManager extends SkillManager {
     }
 
     public void attackTarget(LivingEntity target) {
-        if (target instanceof Tameable tameable) {
+        if (target instanceof Tameable) {
+            Tameable tameable = (Tameable) target;
             if (tameable.getOwner() == getPlayer()) {
                 return;
             }
@@ -440,11 +443,16 @@ public class TamingManager extends SkillManager {
     private void spawnCOTWEntity(CallOfTheWildType callOfTheWildType, Location spawnLocation,
             EntityType entityType) {
         switch (callOfTheWildType) {
-            case CAT ->
+            case CAT:
                 //Entity type is needed for cats because in 1.13 and below we spawn ocelots, in 1.14 and above we spawn cats
-                    spawnCat(spawnLocation, entityType);
-            case HORSE -> spawnHorse(spawnLocation);
-            case WOLF -> spawnWolf(spawnLocation);
+                spawnCat(spawnLocation, entityType);
+                break;
+            case HORSE:
+                spawnHorse(spawnLocation);
+                break;
+            case WOLF:
+                spawnWolf(spawnLocation);
+                break;
         }
     }
 

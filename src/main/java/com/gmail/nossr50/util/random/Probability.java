@@ -57,7 +57,7 @@ public interface Probability {
      * @param probabilityValue probability value
      * @return true for succeeding, false for failing
      */
-    static private boolean isSuccessfulRoll(double probabilityValue) {
+    static boolean isSuccessfulRoll(double probabilityValue) {
         return (probabilityValue) >= ThreadLocalRandom.current().nextDouble(1D);
     }
 

@@ -213,32 +213,51 @@ public enum SuperAbilityType {
     // TODO: Add unit tests
     // TODO: This is stupid
     public boolean getPermissions(Player player) {
-        return switch (this) {
-            case BERSERK -> Permissions.berserk(player);
-            case BLAST_MINING -> Permissions.remoteDetonation(player);
-            case GIGA_DRILL_BREAKER -> Permissions.gigaDrillBreaker(player);
-            case GREEN_TERRA -> Permissions.greenTerra(player);
-            case SERRATED_STRIKES -> Permissions.serratedStrikes(player);
-            case SKULL_SPLITTER -> Permissions.skullSplitter(player);
-            case SUPER_BREAKER -> Permissions.superBreaker(player);
-            case TREE_FELLER -> Permissions.treeFeller(player);
+        switch (this) {
+            case BERSERK:
+                return Permissions.berserk(player);
+            case BLAST_MINING:
+                return Permissions.remoteDetonation(player);
+            case GIGA_DRILL_BREAKER:
+                return Permissions.gigaDrillBreaker(player);
+            case GREEN_TERRA:
+                return Permissions.greenTerra(player);
+            case SERRATED_STRIKES:
+                return Permissions.serratedStrikes(player);
+            case SKULL_SPLITTER:
+                return Permissions.skullSplitter(player);
+            case SUPER_BREAKER:
+                return Permissions.superBreaker(player);
+            case TREE_FELLER:
+                return Permissions.treeFeller(player);
             // TODO: once implemented, return permissions for the following abilities
-            case EXPLOSIVE_SHOT, TRIDENTS_SUPER_ABILITY, SUPER_SHOTGUN, MACES_SUPER_ABILITY,
-                 SPEARS_SUPER_ABILITY -> false;
-        };
+            case EXPLOSIVE_SHOT:
+            case TRIDENTS_SUPER_ABILITY:
+            case SUPER_SHOTGUN:
+            case MACES_SUPER_ABILITY:
+            case SPEARS_SUPER_ABILITY:
+            default:
+                return false;
+        }
     }
 
     public boolean blockCheck(@NotNull Block block) {
-        return switch (this) {
-            case BERSERK -> (BlockUtils.affectedByGigaDrillBreaker(block)
-                    || block.getType() == Material.SNOW
-                    || mcMMO.getMaterialMapStore().isGlass(block.getType()));
-            case GIGA_DRILL_BREAKER -> BlockUtils.affectedByGigaDrillBreaker(block);
-            case GREEN_TERRA -> BlockUtils.canMakeMossy(block);
-            case SUPER_BREAKER -> BlockUtils.affectedBySuperBreaker(block);
-            case TREE_FELLER -> BlockUtils.hasWoodcuttingXP(block);
-            default -> false;
-        };
+        switch (this) {
+            case BERSERK:
+                return (BlockUtils.affectedByGigaDrillBreaker(block)
+                        || block.getType() == Material.SNOW
+                        || mcMMO.getMaterialMapStore().isGlass(block.getType()));
+            case GIGA_DRILL_BREAKER:
+                return BlockUtils.affectedByGigaDrillBreaker(block);
+            case GREEN_TERRA:
+                return BlockUtils.canMakeMossy(block);
+            case SUPER_BREAKER:
+                return BlockUtils.affectedBySuperBreaker(block);
+            case TREE_FELLER:
+                return BlockUtils.hasWoodcuttingXP(block);
+            default:
+                return false;
+        }
     }
 
     /**

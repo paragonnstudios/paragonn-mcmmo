@@ -31,9 +31,12 @@ public enum SoundType {
     
     public boolean usesCustomPitch()
     {
-        return switch (this) {
-            case POP, FIZZ -> true;
-            default -> false;
-        };
+        switch (this) {
+            case POP:
+            case FIZZ:
+                return true;
+            default:
+                return false;
+        }
     }
 }

@@ -192,9 +192,11 @@ public class RuptureTask extends CancellableRunnable {
 
     @Override
     public final boolean equals(Object o) {
-        if (!(o instanceof RuptureTask that)) {
+        if (!(o instanceof RuptureTask)) {
             return false;
         }
+
+        RuptureTask that = (RuptureTask) o;
 
         return ruptureSource.equals(that.ruptureSource) && targetEntity.equals(that.targetEntity);
     }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -51,8 +52,18 @@ public class PotionConfig extends LegacyConfigLoader {
             null,
             AlchemyPotionConfigResultType.ERROR);
 
-    record AlchemyPotionConfigResult(AlchemyPotion alchemyPotion,
-                                     AlchemyPotionConfigResultType resultType) {
+    private static final class AlchemyPotionConfigResult {
+        private final AlchemyPotion alchemyPotion;
+        private final AlchemyPotionConfigResultType resultType;
+
+        private AlchemyPotionConfigResult(AlchemyPotion alchemyPotion,
+                                          AlchemyPotionConfigResultType resultType) {
+            this.alchemyPotion = alchemyPotion;
+            this.resultType = resultType;
+        }
+
+        public AlchemyPotion alchemyPotion() { return alchemyPotion; }
+        public AlchemyPotionConfigResultType resultType() { return resultType; }
     }
 
     enum AlchemyPotionConfigResultType {
@@ -141,13 +152,13 @@ public class PotionConfig extends LegacyConfigLoader {
         for (String potionName : potionSection.getKeys(false)) {
             AlchemyPotionConfigResult alchemyPotionConfigResult = loadPotion(
                     potionSection.getConfigurationSection(potionName));
-            AlchemyPotion potion = alchemyPotionConfigResult.alchemyPotion;
+            AlchemyPotion potion = alchemyPotionConfigResult.alchemyPotion();
 
             if (potion != null) {
                 alchemyPotions.put(potionName, potion);
                 potionsLoaded++;
             } else {
-                if (alchemyPotionConfigResult.resultType
+                if (alchemyPotionConfigResult.resultType()
                         == AlchemyPotionConfigResultType.INCOMPATIBLE) {
                     incompatible++;
                 } else {
@@ -397,16 +408,24 @@ public class PotionConfig extends LegacyConfigLoader {
      * @return List of ingredients for the given tier.
      */
     public List<ItemStack> getIngredients(int tier) {
-        return switch (tier) {
-            case 8 -> concoctionsIngredientsTierEight;
-            case 7 -> concoctionsIngredientsTierSeven;
-            case 6 -> concoctionsIngredientsTierSix;
-            case 5 -> concoctionsIngredientsTierFive;
-            case 4 -> concoctionsIngredientsTierFour;
-            case 3 -> concoctionsIngredientsTierThree;
-            case 2 -> concoctionsIngredientsTierTwo;
-            default -> concoctionsIngredientsTierOne;
-        };
+        switch (tier) {
+            case 8:
+                return concoctionsIngredientsTierEight;
+            case 7:
+                return concoctionsIngredientsTierSeven;
+            case 6:
+                return concoctionsIngredientsTierSix;
+            case 5:
+                return concoctionsIngredientsTierFive;
+            case 4:
+                return concoctionsIngredientsTierFour;
+            case 3:
+                return concoctionsIngredientsTierThree;
+            case 2:
+                return concoctionsIngredientsTierTwo;
+            default:
+                return concoctionsIngredientsTierOne;
+        }
     }
 
     /**
@@ -443,7 +462,7 @@ public class PotionConfig extends LegacyConfigLoader {
 
         ItemMeta itemMeta = item.getItemMeta();
         final List<AlchemyPotion> potionList = alchemyPotions.values().stream().filter(
-                potion -> potion.isSimilarPotion(item, itemMeta)).toList();
+                potion -> potion.isSimilarPotion(item, itemMeta)).collect(Collectors.toList());
 
         return potionList.isEmpty() ? null : potionList.get(0);
     }

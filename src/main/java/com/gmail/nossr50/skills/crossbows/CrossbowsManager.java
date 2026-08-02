@@ -15,14 +15,15 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.ProjectileUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
+import java.lang.reflect.Method;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -61,11 +62,12 @@ public class CrossbowsManager extends SkillManager {
 
         final ProjectileSource originalArrowShooter = originalArrow.getShooter();
         final Vector arrowInBlockVector = originalArrow.getVelocity();
-        final Vector reflectedDirection = arrowInBlockVector.subtract(
-                normal.multiply(2 * arrowInBlockVector.dot(normal)));
-        final Vector inverseNormal = normal.multiply(-1);
+        final Vector reflectedDirection = arrowInBlockVector.clone().subtract(
+                normal.clone().multiply(2 * arrowInBlockVector.dot(normal)));
+        final Vector inverseNormal = normal.clone().multiply(-1);
 
-        // check the angle of the arrow against the inverse normal to see if the angle was too shallow
+        // check the angle of the arrow against the inverse normal to see if the angle
+        // was too shallow
         // only checks angle on the first bounce
         if (bounceCount == 0 && arrowInBlockVector.angle(inverseNormal) < Math.PI / 4) {
             return;
@@ -77,22 +79,27 @@ public class CrossbowsManager extends SkillManager {
         // copy some properties from the old arrow
         spawnedArrow.setShooter(originalArrowShooter);
         spawnedArrow.setCritical(originalArrow.isCritical());
-        spawnedArrow.setPierceLevel(originalArrow.getPierceLevel());
-        spawnedArrow.setPickupStatus(originalArrow.getPickupStatus());
-        spawnedArrow.setKnockbackStrength(originalArrow.getKnockbackStrength());
+        
+        safeInvoke(spawnedArrow, "setPierceLevel", int.class, safeGet(originalArrow, "getPierceLevel", 0));
+        safeInvoke(spawnedArrow, "setPickupStatus", Object.class, safeGet(originalArrow, "getPickupStatus", null));
+        safeInvoke(spawnedArrow, "setKnockbackStrength", int.class, safeGet(originalArrow, "getKnockbackStrength", 0));
 
-        // Copy tipped-arrow state: set the item type to TIPPED_ARROW before applying
-        // potion data so the pickup item has the correct POTION_DURATION_SCALE (0.125).
-        // Without this, spawnArrow() creates an Items.ARROW pickup item, defaulting
-        // the scale to 1.0 and making effects last 8× longer than intended.
-        if (originalArrow.getBasePotionType() != null) {
-            spawnedArrow.setItem(new ItemStack(Material.TIPPED_ARROW));
-            spawnedArrow.setBasePotionType(originalArrow.getBasePotionType());
+        // Copy tipped-arrow state
+        Object basePotionType = safeGet(originalArrow, "getBasePotionType", null);
+        if (basePotionType != null) {
+            Material tippedArrow = Material.getMaterial("TIPPED_ARROW");
+            if (tippedArrow != null) {
+                safeInvoke(spawnedArrow, "setItem", ItemStack.class, new ItemStack(tippedArrow));
+            }
+            safeInvoke(spawnedArrow, "setBasePotionType", basePotionType.getClass(), basePotionType);
         }
 
-        if (originalArrow.hasCustomEffects()) {
-            for (final var effect : originalArrow.getCustomEffects()) {
-                spawnedArrow.addCustomEffect(effect, true);
+        if (safeGet(originalArrow, "hasCustomEffects", false)) {
+            Iterable<PotionEffect> effects = safeGet(originalArrow, "getCustomEffects", null);
+            if (effects != null) {
+                for (final PotionEffect effect : effects) {
+                    spawnedArrow.addCustomEffect(effect, true);
+                }
             }
         }
 
@@ -111,16 +118,26 @@ public class CrossbowsManager extends SkillManager {
                     MCMMO_METADATA_VALUE);
         }
         // There are reasons to keep this despite using the metadata values above
-        spawnedArrow.setShotFromCrossbow(true);
-
-        // Don't allow multi-shot or infinite arrows to be picked up
-        if (spawnedArrow.hasMetadata(MetadataConstants.METADATA_KEY_MULTI_SHOT_ARROW)
-                || spawnedArrow.hasMetadata(MetadataConstants.METADATA_KEY_INF_ARROW)) {
-            spawnedArrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
-        }
+        safeInvoke(spawnedArrow, "setShotFromCrossbow", boolean.class, true);
 
         // Schedule cleanup of metadata in case metadata cleanup fails
         delayArrowMetaCleanup(spawnedArrow);
+    }
+
+    private void safeInvoke(Object target, String methodName, Class<?> paramType, Object value) {
+        try {
+            Method method = target.getClass().getMethod(methodName, paramType);
+            method.invoke(target, value);
+        } catch (Exception ignored) {}
+    }
+
+    private <T> T safeGet(Object target, String methodName, T defaultValue) {
+        try {
+            Method method = target.getClass().getMethod(methodName);
+            return (T) method.invoke(target);
+        } catch (Exception e) {
+            return defaultValue;
+        }
     }
 
     public int getTrickShotMaxBounceCount() {

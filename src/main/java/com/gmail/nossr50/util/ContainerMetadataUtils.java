@@ -62,7 +62,8 @@ public class ContainerMetadataUtils {
     }
 
     public static @Nullable OfflinePlayer getContainerOwner(BlockState container) {
-        if (container instanceof PersistentDataHolder persistentDataHolder) {
+        if (container instanceof PersistentDataHolder) {
+            PersistentDataHolder persistentDataHolder = (PersistentDataHolder) container;
             final UUID uuid = getOwner(persistentDataHolder);
 
             if (uuid != null) {

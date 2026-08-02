@@ -122,7 +122,8 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        if (blockState instanceof Furnace furnace) {
+        if (blockState instanceof Furnace) {
+            Furnace furnace = (Furnace) blockState;
             OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(furnace);
 
             if (offlinePlayer != null) {
@@ -193,7 +194,8 @@ public class InventoryListener implements Listener {
         Player player = ((Player) event.getWhoClicked()).getPlayer();
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if (event.getInventory() instanceof FurnaceInventory furnaceInventory) {
+        if (event.getInventory() instanceof FurnaceInventory) {
+            FurnaceInventory furnaceInventory = (FurnaceInventory) event.getInventory();
             if (!mcMMO.p.getSkillTools()
                     .doesPlayerHaveSkillPermission(player, PrimarySkillType.SMELTING)) {
                 return;
@@ -202,7 +204,8 @@ public class InventoryListener implements Listener {
             ContainerMetadataUtils.processContainerOwnership(furnaceInventory.getHolder(), player);
         }
 
-        if (event.getInventory() instanceof BrewerInventory brewerInventory) {
+        if (event.getInventory() instanceof BrewerInventory) {
+            BrewerInventory brewerInventory = (BrewerInventory) event.getInventory();
             if (!mcMMO.p.getSkillTools()
                     .doesPlayerHaveSkillPermission(player, PrimarySkillType.ALCHEMY)) {
                 return;
@@ -217,9 +220,10 @@ public class InventoryListener implements Listener {
 
         InventoryHolder holder = inventory.getHolder();
 
-        if (!(holder instanceof BrewingStand stand)) {
+        if (!(holder instanceof BrewingStand)) {
             return;
         }
+        BrewingStand stand = (BrewingStand) holder;
 
         HumanEntity whoClicked = event.getWhoClicked();
 
@@ -435,7 +439,8 @@ public class InventoryListener implements Listener {
 
         final InventoryHolder holder = inventory.getHolder();
 
-        if (holder instanceof BrewingStand brewingStand) {
+        if (holder instanceof BrewingStand) {
+            BrewingStand brewingStand = (BrewingStand) holder;
             int ingredientLevel = 1;
 
             OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(brewingStand);

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractPlayerAuthor implements Author {
@@ -103,7 +103,7 @@ public abstract class AbstractPlayerAuthor implements Author {
     }
 
     @Override
-    public @NonNull UUID uuid() {
+    public @NotNull UUID uuid() {
         return player.getUniqueId();
     }
 

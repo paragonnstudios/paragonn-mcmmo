@@ -572,14 +572,27 @@ public final class ItemUtils {
      */
     public static boolean isMiningDrop(ItemStack item) {
         //TODO: 1.14 This needs to be updated
-        return switch (item.getType()) { // Should we also have Glowing Redstone Ore here?
+        switch (item.getType()) { // Should we also have Glowing Redstone Ore here?
             // Should we also have Glowstone here?
-            case COAL, COAL_ORE, DIAMOND, DIAMOND_ORE, EMERALD, EMERALD_ORE, GOLD_ORE, IRON_ORE,
-                 LAPIS_ORE,
-                 REDSTONE_ORE, REDSTONE, GLOWSTONE_DUST, QUARTZ, NETHER_QUARTZ_ORE, LAPIS_LAZULI ->
-                    true;
-            default -> false;
-        };
+            case COAL:
+            case COAL_ORE:
+            case DIAMOND:
+            case DIAMOND_ORE:
+            case EMERALD:
+            case EMERALD_ORE:
+            case GOLD_ORE:
+            case IRON_ORE:
+            case LAPIS_ORE:
+            case REDSTONE_ORE:
+            case REDSTONE:
+            case GLOWSTONE_DUST:
+            case QUARTZ:
+            case NETHER_QUARTZ_ORE:
+            case LAPIS_LAZULI:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -590,16 +603,35 @@ public final class ItemUtils {
      */
     public static boolean isHerbalismDrop(ItemStack item) {
         //TODO: 1.14 This needs to be updated
-        return switch (item.getType().getKey().getKey().toLowerCase()) {
-            case "wheat", "wheat_seeds", "carrot", "chorus_fruit", "chorus_flower", "potato",
-                 "beetroot", "beetroots",
-                 "beetroot_seeds", "nether_wart", "brown_mushroom", "red_mushroom", "rose_bush",
-                 "dandelion", "cactus",
-                 "sugar_cane", "melon", "melon_seeds", "pumpkin", "pumpkin_seeds", "lily_pad",
-                 "vine", "tall_grass",
-                 "cocoa_beans" -> true;
-            default -> false;
-        };
+        switch (item.getType().getKey().getKey().toLowerCase()) {
+            case "wheat":
+            case "wheat_seeds":
+            case "carrot":
+            case "chorus_fruit":
+            case "chorus_flower":
+            case "potato":
+            case "beetroot":
+            case "beetroots":
+            case "beetroot_seeds":
+            case "nether_wart":
+            case "brown_mushroom":
+            case "red_mushroom":
+            case "rose_bush":
+            case "dandelion":
+            case "cactus":
+            case "sugar_cane":
+            case "melon":
+            case "melon_seeds":
+            case "pumpkin":
+            case "pumpkin_seeds":
+            case "lily_pad":
+            case "vine":
+            case "tall_grass":
+            case "cocoa_beans":
+                return true;
+            default:
+                return false;
+        }
     }
 
 
@@ -611,19 +643,53 @@ public final class ItemUtils {
      */
     public static boolean isMobDrop(ItemStack item) {
         //TODO: 1.14 This needs to be updated
-        return switch (item.getType()) {
-            case STRING, FEATHER, CHICKEN, COOKED_CHICKEN, LEATHER, BEEF, COOKED_BEEF, PORKCHOP,
-                 COOKED_PORKCHOP,
-                 WHITE_WOOL, BLACK_WOOL, BLUE_WOOL, BROWN_WOOL, CYAN_WOOL, GRAY_WOOL, GREEN_WOOL,
-                 LIGHT_BLUE_WOOL,
-                 LIGHT_GRAY_WOOL, LIME_WOOL, MAGENTA_WOOL, ORANGE_WOOL, PINK_WOOL, PURPLE_WOOL,
-                 RED_WOOL, YELLOW_WOOL,
-                 IRON_INGOT, SNOWBALL, BLAZE_ROD, SPIDER_EYE, GUNPOWDER, ENDER_PEARL, GHAST_TEAR,
-                 MAGMA_CREAM, BONE,
-                 ARROW, SLIME_BALL, NETHER_STAR, ROTTEN_FLESH, GOLD_NUGGET, EGG, ROSE_BUSH, COAL ->
-                    true;
-            default -> false;
-        };
+        switch (item.getType()) {
+            case STRING:
+            case FEATHER:
+            case CHICKEN:
+            case COOKED_CHICKEN:
+            case LEATHER:
+            case BEEF:
+            case COOKED_BEEF:
+            case PORKCHOP:
+            case COOKED_PORKCHOP:
+            case WHITE_WOOL:
+            case BLACK_WOOL:
+            case BLUE_WOOL:
+            case BROWN_WOOL:
+            case CYAN_WOOL:
+            case GRAY_WOOL:
+            case GREEN_WOOL:
+            case LIGHT_BLUE_WOOL:
+            case LIGHT_GRAY_WOOL:
+            case LIME_WOOL:
+            case MAGENTA_WOOL:
+            case ORANGE_WOOL:
+            case PINK_WOOL:
+            case PURPLE_WOOL:
+            case RED_WOOL:
+            case YELLOW_WOOL:
+            case IRON_INGOT:
+            case SNOWBALL:
+            case BLAZE_ROD:
+            case SPIDER_EYE:
+            case GUNPOWDER:
+            case ENDER_PEARL:
+            case GHAST_TEAR:
+            case MAGMA_CREAM:
+            case BONE:
+            case ARROW:
+            case SLIME_BALL:
+            case NETHER_STAR:
+            case ROTTEN_FLESH:
+            case GOLD_NUGGET:
+            case EGG:
+            case ROSE_BUSH:
+            case COAL:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -633,20 +699,42 @@ public final class ItemUtils {
      * @return true if the item is a woodcutting drop, false otherwise
      */
     public static boolean isWoodcuttingDrop(ItemStack item) {
-        return switch (item.getType().toString()) {
-            case "ACACIA_LOG", "BIRCH_LOG", "DARK_OAK_LOG", "PALE_OAK_LOG", "JUNGLE_LOG", "OAK_LOG",
-                 "SPRUCE_LOG",
-                 "STRIPPED_ACACIA_LOG", "STRIPPED_BIRCH_LOG", "STRIPPED_DARK_OAK_LOG",
-                 "STRIPPED_PALE_OAK_LOG",
-                 "STRIPPED_JUNGLE_LOG", "STRIPPED_OAK_LOG", "STRIPPED_SPRUCE_LOG",
-                 "STRIPPED_MANGROVE_LOG",
-                 "ACACIA_SAPLING", "SPRUCE_SAPLING", "BIRCH_SAPLING", "DARK_OAK_SAPLING",
-                 "PALE_OAK_SAPLING",
-                 "JUNGLE_SAPLING", "OAK_SAPLING", "ACACIA_LEAVES", "BIRCH_LEAVES",
-                 "DARK_OAK_LEAVES", "PALE_OAK_LEAVES",
-                 "JUNGLE_LEAVES", "OAK_LEAVES", "SPRUCE_LEAVES", "BEE_NEST", "APPLE" -> true;
-            default -> false;
-        };
+        switch (item.getType().toString()) {
+            case "ACACIA_LOG":
+            case "BIRCH_LOG":
+            case "DARK_OAK_LOG":
+            case "PALE_OAK_LOG":
+            case "JUNGLE_LOG":
+            case "OAK_LOG":
+            case "SPRUCE_LOG":
+            case "STRIPPED_ACACIA_LOG":
+            case "STRIPPED_BIRCH_LOG":
+            case "STRIPPED_DARK_OAK_LOG":
+            case "STRIPPED_PALE_OAK_LOG":
+            case "STRIPPED_JUNGLE_LOG":
+            case "STRIPPED_OAK_LOG":
+            case "STRIPPED_SPRUCE_LOG":
+            case "STRIPPED_MANGROVE_LOG":
+            case "ACACIA_SAPLING":
+            case "SPRUCE_SAPLING":
+            case "BIRCH_SAPLING":
+            case "DARK_OAK_SAPLING":
+            case "PALE_OAK_SAPLING":
+            case "JUNGLE_SAPLING":
+            case "OAK_SAPLING":
+            case "ACACIA_LEAVES":
+            case "BIRCH_LEAVES":
+            case "DARK_OAK_LEAVES":
+            case "PALE_OAK_LEAVES":
+            case "JUNGLE_LEAVES":
+            case "OAK_LEAVES":
+            case "SPRUCE_LEAVES":
+            case "BEE_NEST":
+            case "APPLE":
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**

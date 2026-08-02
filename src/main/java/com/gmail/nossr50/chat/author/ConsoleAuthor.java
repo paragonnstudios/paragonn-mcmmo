@@ -3,7 +3,7 @@ package com.gmail.nossr50.chat.author;
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.util.text.TextUtils;
 import java.util.UUID;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.NotNull;
 
 public class ConsoleAuthor implements Author {
@@ -32,7 +32,7 @@ public class ConsoleAuthor implements Author {
     }
 
     @Override
-    public @NonNull UUID uuid() {
+    public @NotNull UUID uuid() {
         return uuid;
     }
 }

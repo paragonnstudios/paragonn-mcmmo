@@ -183,7 +183,7 @@ public class SalvageManager extends SkillManager {
         if (RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR) == 1) {
             return 1;
         } else {
-            var curRank = RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
+            int curRank = RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
             return curRank * 2;
         }
     }

@@ -12,8 +12,6 @@ import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.ParticleEffectUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import java.util.Locale;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -28,10 +26,7 @@ public class MacesManager extends SkillManager {
     }
 
     private static @Nullable PotionEffectType mockSpigotMatch(@NotNull String input) {
-        // Replicates match() behaviour for older versions lacking this API
-        final String filtered = input.toLowerCase(Locale.ROOT).replaceAll("\\s+", "_");
-        final NamespacedKey namespacedKey = NamespacedKey.fromString(filtered);
-        return (namespacedKey != null) ? Registry.EFFECT.get(namespacedKey) : null;
+        return PotionEffectType.getByName(input.toUpperCase(Locale.ROOT));
     }
 
     /**

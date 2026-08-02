@@ -89,27 +89,27 @@ public class UnarmedManager extends SkillManager {
             return;
         }
 
-        switch (block.getType()) {
-            case STONE_BRICKS:
-                block.setType(Material.CRACKED_STONE_BRICKS);
-                return;
-            case INFESTED_STONE_BRICKS:
-                block.setType(Material.INFESTED_CRACKED_STONE_BRICKS);
-                return;
-            case DEEPSLATE_BRICKS:
-                block.setType(Material.CRACKED_DEEPSLATE_BRICKS);
-                return;
-            case DEEPSLATE_TILES:
-                block.setType(Material.CRACKED_DEEPSLATE_TILES);
-                return;
-            case POLISHED_BLACKSTONE_BRICKS:
-                block.setType(Material.CRACKED_POLISHED_BLACKSTONE_BRICKS);
-                return;
-            case NETHER_BRICKS:
-                block.setType(Material.CRACKED_NETHER_BRICKS);
-                return;
-            default:
+        String typeName = block.getType().name();
+
+        if (typeName.equals("STONE_BRICKS")) {
+            safeSetType(block, "CRACKED_STONE_BRICKS");
+        } else if (typeName.equals("INFESTED_STONE_BRICKS")) {
+            safeSetType(block, "INFESTED_CRACKED_STONE_BRICKS");
+        } else if (typeName.equals("DEEPSLATE_BRICKS")) {
+            safeSetType(block, "CRACKED_DEEPSLATE_BRICKS");
+        } else if (typeName.equals("DEEPSLATE_TILES")) {
+            safeSetType(block, "CRACKED_DEEPSLATE_TILES");
+        } else if (typeName.equals("POLISHED_BLACKSTONE_BRICKS")) {
+            safeSetType(block, "CRACKED_POLISHED_BLACKSTONE_BRICKS");
+        } else if (typeName.equals("NETHER_BRICKS")) {
+            safeSetType(block, "CRACKED_NETHER_BRICKS");
         }
+    }
+
+    private void safeSetType(Block block, String materialName) {
+        try {
+            block.setType(Material.valueOf(materialName));
+        } catch (Exception ignored) {}
     }
 
     /**

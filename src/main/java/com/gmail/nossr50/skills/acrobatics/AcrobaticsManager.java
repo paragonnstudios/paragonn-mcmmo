@@ -110,7 +110,8 @@ public class AcrobaticsManager extends SkillManager {
 
             if (SkillUtils.cooldownExpired(mmoPlayer.getRespawnATS(),
                     Misc.PLAYER_RESPAWN_COOLDOWN_SECONDS)) {
-                if (attacker instanceof Mob mob) {
+                if (attacker instanceof Mob) {
+                    Mob mob = (Mob) attacker;
                     //Check to see how many dodge XP rewards this mob has handed out
                     if (mob.hasMetadata(MetadataConstants.METADATA_KEY_DODGE_TRACKER)
                             && ExperienceConfig.getInstance().isAcrobaticsExploitingPrevented()) {

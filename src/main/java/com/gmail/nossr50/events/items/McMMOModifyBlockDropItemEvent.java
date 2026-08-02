@@ -200,9 +200,11 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
 
     @Override
     public final boolean equals(Object o) {
-        if (!(o instanceof McMMOModifyBlockDropItemEvent that)) {
+        if (!(o instanceof McMMOModifyBlockDropItemEvent)) {
             return false;
         }
+
+        McMMOModifyBlockDropItemEvent that = (McMMOModifyBlockDropItemEvent) o;
 
         return originalBonusAmountToAdd == that.originalBonusAmountToAdd
                 && modifiedItemStackQuantity == that.modifiedItemStackQuantity

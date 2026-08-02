@@ -3,6 +3,7 @@ package com.gmail.nossr50.config;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -124,10 +125,10 @@ public abstract class BukkitConfig {
         config.options().indent(4);
 
         try {
-            config.options().parseComments(true);
-        } catch (NoSuchMethodError e) {
-            //e.printStackTrace();
-            // mcMMO.p.getLogger().severe("Your Spigot/CraftBukkit API is out of date, update your server software!");
+            Method parseCommentsMethod = config.options().getClass().getMethod("parseComments", boolean.class);
+            parseCommentsMethod.invoke(config.options(), true);
+        } catch (Exception ignored) {
+            // Legacy version
         }
 
         config.options().copyDefaults(true);

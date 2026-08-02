@@ -17,15 +17,22 @@ import org.jetbrains.annotations.NotNull;
 public class ProjectileUtils {
 
     public static Vector getNormal(BlockFace blockFace) {
-        return switch (blockFace) {
-            case UP -> new Vector(0, 1, 0);
-            case DOWN -> new Vector(0, -1, 0);
-            case NORTH -> new Vector(0, 0, -1);
-            case SOUTH -> new Vector(0, 0, 1);
-            case EAST -> new Vector(1, 0, 0);
-            case WEST -> new Vector(-1, 0, 0);
-            default -> new Vector(0, 0, 0);
-        };
+        switch (blockFace) {
+            case UP:
+                return new Vector(0, 1, 0);
+            case DOWN:
+                return new Vector(0, -1, 0);
+            case NORTH:
+                return new Vector(0, 0, -1);
+            case SOUTH:
+                return new Vector(0, 0, 1);
+            case EAST:
+                return new Vector(1, 0, 0);
+            case WEST:
+                return new Vector(-1, 0, 0);
+            default:
+                return new Vector(0, 0, 0);
+        }
     }
 
     /**

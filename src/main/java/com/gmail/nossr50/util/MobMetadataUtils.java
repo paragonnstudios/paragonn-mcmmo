@@ -59,16 +59,30 @@ public final class MobMetadataUtils {
     private static void initMobFlagKeyMap() throws IncompleteNamespacedKeyRegister {
         for (MobMetaFlagType mobMetaFlagType : MobMetaFlagType.values()) {
             switch (mobMetaFlagType) {
-                case MOB_SPAWNER_MOB -> mobFlagKeyMap.put(mobMetaFlagType, NSK_MOB_SPAWNER_MOB);
-                case EGG_MOB -> mobFlagKeyMap.put(mobMetaFlagType, NSK_EGG_MOB);
-                case NETHER_PORTAL_MOB -> mobFlagKeyMap.put(mobMetaFlagType, NSK_NETHER_GATE_MOB);
-                case COTW_SUMMONED_MOB -> mobFlagKeyMap.put(mobMetaFlagType, NSK_COTW_SUMMONED_MOB);
-                case PLAYER_BRED_MOB -> mobFlagKeyMap.put(mobMetaFlagType, NSK_PLAYER_BRED_MOB);
-                case EXPLOITED_ENDERMEN ->
-                        mobFlagKeyMap.put(mobMetaFlagType, NSK_EXPLOITED_ENDERMEN);
-                case PLAYER_TAMED_MOB -> mobFlagKeyMap.put(mobMetaFlagType, NSK_PLAYER_TAMED_MOB);
-                default -> throw new IncompleteNamespacedKeyRegister(
-                        "Missing namespaced key register for type: " + mobMetaFlagType);
+                case MOB_SPAWNER_MOB:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_MOB_SPAWNER_MOB);
+                    break;
+                case EGG_MOB:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_EGG_MOB);
+                    break;
+                case NETHER_PORTAL_MOB:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_NETHER_GATE_MOB);
+                    break;
+                case COTW_SUMMONED_MOB:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_COTW_SUMMONED_MOB);
+                    break;
+                case PLAYER_BRED_MOB:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_PLAYER_BRED_MOB);
+                    break;
+                case EXPLOITED_ENDERMEN:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_EXPLOITED_ENDERMEN);
+                    break;
+                case PLAYER_TAMED_MOB:
+                    mobFlagKeyMap.put(mobMetaFlagType, NSK_PLAYER_TAMED_MOB);
+                    break;
+                default:
+                    throw new IncompleteNamespacedKeyRegister(
+                            "Missing namespaced key register for type: " + mobMetaFlagType);
             }
         }
     }

@@ -1,0 +1,162 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.gmail.nossr50.mcMMO'
+version = '2.2.051-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://repo.codemc.org/repository/maven-public' }
+    maven { url 'https://maven.enginehub.org/repo/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.tcoded.com/releases/' }
+    maven { url 'https://repo.viaversion.com/' }
+    maven { url 'https://repo.dmulloy2.net/repository/maven-public/' }
+}
+
+dependencies {
+    // Spigot & Other APIs (Provided)
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.0-SNAPSHOT'
+    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.0'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:4.7.0'
+
+    // Libraries to be shaded
+    implementation 'co.aikar:acf-bukkit:0.5.1-SNAPSHOT'
+    implementation 'net.kyori:adventure-platform-bukkit:4.3.4'
+    implementation 'net.kyori:adventure-text-serializer-bungeecord:4.3.4'
+    implementation 'net.kyori:adventure-text-serializer-gson:4.17.0'
+    implementation 'net.kyori:adventure-text-serializer-gson-legacy-impl:4.17.0'
+    implementation 'net.kyori:adventure-text-serializer-json:4.17.0'
+    implementation 'net.kyori:adventure-text-serializer-json-legacy-impl:4.17.0'
+    implementation 'net.kyori:adventure-api:4.17.0'
+    implementation 'net.kyori:adventure-nbt:4.17.0'
+    implementation 'net.kyori:adventure-key:4.17.0'
+    implementation 'net.kyori:adventure-platform-api:4.3.4'
+    implementation 'net.kyori:adventure-platform-facet:4.3.4'
+    implementation 'net.kyori:adventure-platform-viaversion:4.3.4'
+    implementation 'net.kyori:option:1.0.0'
+    implementation 'org.bstats:bstats-bukkit:3.0.2'
+    implementation 'org.apache.tomcat:tomcat-jdbc:9.0.83'
+    implementation 'org.jetbrains:annotations:24.1.0'
+    implementation 'com.google.guava:guava:21.0' // Matches Spigot 1.12.2
+    implementation 'com.tcoded:FoliaLib:0.5.1'
+    implementation 'commons-logging:commons-logging:1.2'
+    implementation 'org.apache.commons:commons-lang3:3.5'
+    implementation 'commons-lang:commons-lang:2.6'
+
+    // Testing
+    testImplementation 'org.assertj:assertj-core:3.24.2' // Downgraded for Java 8 (3.25+ needs Java 17)
+    testImplementation 'com.h2database:h2:2.1.214' // Older version for Java 8
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testImplementation 'org.testcontainers:testcontainers:1.19.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
+    testImplementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    testImplementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+    testImplementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
+    testImplementation 'org.testcontainers:mysql:1.19.3'
+    testImplementation 'org.testcontainers:mariadb:1.19.3'
+    testImplementation 'com.mysql:mysql-connector-j:8.2.0'
+    testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
+    testImplementation 'org.mockito:mockito-core:4.11.0' // Mockito 5 requires Java 11+
+}
+
+shadowJar {
+    archiveFileName = 'paragonn-mmo.jar'
+    
+    // Relocations as per pom.xml
+    relocate 'net.kyori', 'com.gmail.nossr50.mcmmo.kyori'
+    relocate 'co.aikar.commands', 'com.gmail.nossr50.mcmmo.acf'
+    relocate 'co.aikar.locales', 'com.gmail.nossr50.mcmmo.locales'
+    relocate 'org.apache.commons.logging', 'com.gmail.nossr50.mcmmo.commons.logging'
+    relocate 'org.apache.juli', 'com.gmail.nossr50.mcmmo.database.tomcat.juli'
+    relocate 'org.apache.tomcat', 'com.gmail.nossr50.mcmmo.database.tomcat'
+    relocate 'org.bstats', 'com.gmail.nossr50.mcmmo.metrics.bstats'
+    relocate 'com.tcoded.folialib', 'com.gmail.nossr50.mcmmo.folialib'
+}
+
+processResources {
+    def props = [
+        'project': [
+            'version': project.version,
+            'artifactId': rootProject.name,
+            'name': rootProject.name
+        ],
+        'BUILD_NUMBER': System.getenv('BUILD_NUMBER') ?: 'CUSTOM'
+    ]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+
+    filesMatching(['**/*.yml', '**/*.properties']) {
+        filter { line ->
+            line.replace('${project.version}', (String)project.version)
+                .replace('${project.artifactId}', (String)rootProject.name)
+                .replace('${project.name}', (String)rootProject.name)
+                .replace('${BUILD_NUMBER}', (String)(System.getenv('BUILD_NUMBER') ?: 'CUSTOM'))
+        }
+    }
+
+    // Locales mapping (Remapping to com/gmail/nossr50/locale as in Maven)
+    from('src/main/resources/locale/') {
+        include 'locale*.properties'
+        into 'com/gmail/nossr50/locale'
+        filter { line ->
+            line.replace('${project.version}', (String)project.version)
+                .replace('${project.artifactId}', (String)rootProject.name)
+                .replace('${project.name}', (String)rootProject.name)
+                .replace('${BUILD_NUMBER}', (String)(System.getenv('BUILD_NUMBER') ?: 'CUSTOM'))
+        }
+    }
+
+    // Mods mapping
+    from('src/main/resources/mods') {
+        include '*.yml'
+        into 'mods'
+        filter { line ->
+            line.replace('${project.version}', (String)project.version)
+                .replace('${project.artifactId}', (String)rootProject.name)
+                .replace('${project.name}', (String)rootProject.name)
+                .replace('${BUILD_NUMBER}', (String)(System.getenv('BUILD_NUMBER') ?: 'CUSTOM'))
+        }
+    }
+
+    // License inclusion
+    from(projectDir) {
+        include 'LICENSE'
+    }
+}
+
+// Clean up default resources output to avoid duplicates from custom mappings above
+// (src/main/resources/locale would otherwise end up in both locale/ and com/gmail/nossr50/locale/)
+sourceSets.main.resources.srcDirs.each { srcDir ->
+    processResources.exclude { details ->
+        details.file.path.startsWith(new File(srcDir, 'locale').path) ||
+        details.file.path.startsWith(new File(srcDir, 'mods').path)
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ["-parameters"]
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Make shadowJar the primary output
+build.dependsOn shadowJar

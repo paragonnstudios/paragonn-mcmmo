@@ -87,26 +87,65 @@ public final class CommandRegistrationManager {
                     commandName, "?", "[" + LocaleLoader.getString("Commands.Usage.Page") + "]"));
 
             switch (primarySkillType) {
-                case ACROBATICS -> command.setExecutor(new AcrobaticsCommand());
-                case ALCHEMY -> command.setExecutor(new AlchemyCommand());
-                case ARCHERY -> command.setExecutor(new ArcheryCommand());
-                case AXES -> command.setExecutor(new AxesCommand());
-                case CROSSBOWS -> command.setExecutor(new CrossbowsCommand());
-                case EXCAVATION -> command.setExecutor(new ExcavationCommand());
-                case FISHING -> command.setExecutor(new FishingCommand());
-                case HERBALISM -> command.setExecutor(new HerbalismCommand());
-                case MACES -> command.setExecutor(new MacesCommand());
-                case MINING -> command.setExecutor(new MiningCommand());
-                case REPAIR -> command.setExecutor(new RepairCommand());
-                case SALVAGE -> command.setExecutor(new SalvageCommand());
-                case SMELTING -> command.setExecutor(new SmeltingCommand());
-                case SPEARS -> command.setExecutor(new SpearsCommand());
-                case SWORDS -> command.setExecutor(new SwordsCommand());
-                case TAMING -> command.setExecutor(new TamingCommand());
-                case TRIDENTS -> command.setExecutor(new TridentsCommand());
-                case UNARMED -> command.setExecutor(new UnarmedCommand());
-                case WOODCUTTING -> command.setExecutor(new WoodcuttingCommand());
-                default -> throw new IllegalStateException("Unexpected value: " + primarySkillType);
+                case ACROBATICS:
+                    command.setExecutor(new AcrobaticsCommand());
+                    break;
+                case ALCHEMY:
+                    command.setExecutor(new AlchemyCommand());
+                    break;
+                case ARCHERY:
+                    command.setExecutor(new ArcheryCommand());
+                    break;
+                case AXES:
+                    command.setExecutor(new AxesCommand());
+                    break;
+                case CROSSBOWS:
+                    command.setExecutor(new CrossbowsCommand());
+                    break;
+                case EXCAVATION:
+                    command.setExecutor(new ExcavationCommand());
+                    break;
+                case FISHING:
+                    command.setExecutor(new FishingCommand());
+                    break;
+                case HERBALISM:
+                    command.setExecutor(new HerbalismCommand());
+                    break;
+                case MACES:
+                    command.setExecutor(new MacesCommand());
+                    break;
+                case MINING:
+                    command.setExecutor(new MiningCommand());
+                    break;
+                case REPAIR:
+                    command.setExecutor(new RepairCommand());
+                    break;
+                case SALVAGE:
+                    command.setExecutor(new SalvageCommand());
+                    break;
+                case SMELTING:
+                    command.setExecutor(new SmeltingCommand());
+                    break;
+                case SPEARS:
+                    command.setExecutor(new SpearsCommand());
+                    break;
+                case SWORDS:
+                    command.setExecutor(new SwordsCommand());
+                    break;
+                case TAMING:
+                    command.setExecutor(new TamingCommand());
+                    break;
+                case TRIDENTS:
+                    command.setExecutor(new TridentsCommand());
+                    break;
+                case UNARMED:
+                    command.setExecutor(new UnarmedCommand());
+                    break;
+                case WOODCUTTING:
+                    command.setExecutor(new WoodcuttingCommand());
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + primarySkillType);
             }
         }
     }

@@ -127,7 +127,9 @@ public class HerbalismManager extends SkillManager {
                 mmoPlayer.getPlayer().sendMessage("Processing sweet berry bush rewards");
             }
             //Check the age
-            if (blockState.getBlockData() instanceof Ageable ageable) {
+            if (blockState.getBlockData() instanceof Ageable) {
+                Ageable ageable = (Ageable) blockState.getBlockData();
+
                 int rewardByAge = 0;
 
                 if (ageable.getAge() == 2) {
@@ -175,7 +177,8 @@ public class HerbalismManager extends SkillManager {
             BlockState blockState = block.getState();
 
             if (blockState.getType().toString().equalsIgnoreCase(SWEET_BERRY_BUSH_ID)) {
-                if (blockState.getBlockData() instanceof Ageable ageable) {
+                if (blockState.getBlockData() instanceof Ageable) {
+                    Ageable ageable = (Ageable) blockState.getBlockData();
 
                     if (ageable.getAge() <= 1) {
                         applyXpGain(xpReward, XPGainReason.PVE, XPGainSource.SELF);
@@ -264,7 +267,8 @@ public class HerbalismManager extends SkillManager {
         }
 
         //Check if the plant was recently replanted
-        if (block.getBlockData() instanceof Ageable ageableCrop) {
+        if (block.getBlockData() instanceof Ageable) {
+            Ageable ageableCrop = (Ageable) block.getBlockData();
             if (!block.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).isEmpty()) {
                 if (block.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).get(0).asBoolean()) {
                     if (isAgeableMature(ageableCrop)) {
@@ -401,7 +405,8 @@ public class HerbalismManager extends SkillManager {
                  * Natural Blocks
                  */
                 //Not all things that are natural should give double drops, make sure its fully mature as well
-                if (plantData instanceof Ageable ageable) {
+                if (plantData instanceof Ageable) {
+                    Ageable ageable = (Ageable) plantData;
 
                     if (isAgeableMature(ageable) || isBizarreAgeable(plantData)) {
                         if (checkDoubleDrop(brokenPlant)) {
@@ -435,10 +440,15 @@ public class HerbalismManager extends SkillManager {
     public boolean isBizarreAgeable(BlockData blockData) {
         if (blockData instanceof Ageable) {
             // Cactus and Sugar Canes cannot be trusted
-            return switch (blockData.getMaterial()) {
-                case CACTUS, KELP, SUGAR_CANE, BAMBOO -> true;
-                default -> false;
-            };
+            switch (blockData.getMaterial()) {
+                case CACTUS:
+                case KELP:
+                case SUGAR_CANE:
+                case BAMBOO:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         return false;
@@ -493,7 +503,8 @@ public class HerbalismManager extends SkillManager {
                  * Natural Blocks
                  */
                 // Calculate XP
-                if (plantData instanceof Ageable plantAgeable) {
+                if (plantData instanceof Ageable) {
+                    Ageable plantAgeable = (Ageable) plantData;
 
                     if (isAgeableMature(plantAgeable) || isBizarreAgeable(plantData)) {
                         xpToReward += ExperienceConfig.getInstance()
@@ -855,9 +866,10 @@ public class HerbalismManager extends SkillManager {
 
         final BlockData blockData = blockState.getBlockData();
 
-        if (!(blockData instanceof Ageable ageable)) {
+        if (!(blockData instanceof Ageable)) {
             return false;
         }
+        Ageable ageable = (Ageable) blockData;
 
         //If the ageable is NOT mature and the player is NOT using a hoe, abort
 
@@ -865,17 +877,32 @@ public class HerbalismManager extends SkillManager {
         final Material replantMaterial;
 
         switch (blockState.getType().getKey().getKey().toLowerCase(Locale.ENGLISH)) {
-            case "carrots" -> replantMaterial = Material.matchMaterial("CARROT");
-            case "wheat" -> replantMaterial = Material.matchMaterial("WHEAT_SEEDS");
-            case "nether_wart" -> replantMaterial = Material.getMaterial("NETHER_WART");
-            case "potatoes" -> replantMaterial = Material.matchMaterial("POTATO");
-            case "beetroots" -> replantMaterial = Material.matchMaterial("BEETROOT_SEEDS");
-            case "cocoa" -> replantMaterial = Material.matchMaterial("COCOA_BEANS");
-            case "torchflower" -> replantMaterial = Material.matchMaterial("TORCHFLOWER_SEEDS");
-            case "sweet_berry_bush" -> replantMaterial = Material.matchMaterial("SWEET_BERRIES");
-            default -> {
+            case "carrots":
+                replantMaterial = Material.matchMaterial("CARROT");
+                break;
+            case "wheat":
+                replantMaterial = Material.matchMaterial("WHEAT_SEEDS");
+                break;
+            case "nether_wart":
+                replantMaterial = Material.getMaterial("NETHER_WART");
+                break;
+            case "potatoes":
+                replantMaterial = Material.matchMaterial("POTATO");
+                break;
+            case "beetroots":
+                replantMaterial = Material.matchMaterial("BEETROOT_SEEDS");
+                break;
+            case "cocoa":
+                replantMaterial = Material.matchMaterial("COCOA_BEANS");
+                break;
+            case "torchflower":
+                replantMaterial = Material.matchMaterial("TORCHFLOWER_SEEDS");
+                break;
+            case "sweet_berry_bush":
+                replantMaterial = Material.matchMaterial("SWEET_BERRIES");
+                break;
+            default:
                 return false;
-            }
         }
 
         if (replantMaterial == null) {

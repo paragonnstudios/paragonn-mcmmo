@@ -187,7 +187,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void defaultInitCreatesDatabaseManagerAndUserFile() {
         // Given + When
-        var databaseManager = new FlatFileDatabaseManager(getTemporaryUserFilePath(), logger, PURGE_TIME, 0);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(getTemporaryUserFilePath(), logger, PURGE_TIME, 0);
 
         // Then
         assertNotNull(databaseManager);
@@ -197,11 +197,11 @@ class FlatFileDatabaseManagerTest {
     @Test
     void updateLeaderboardsOnEmptyFileReturnsUpdated() {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When
-        var status = databaseManager.updateLeaderboards();
+        LeaderboardStatus status = databaseManager.updateLeaderboards();
 
         // Then
         assertEquals(LeaderboardStatus.UPDATED, status);
@@ -210,12 +210,12 @@ class FlatFileDatabaseManagerTest {
     @Test
     void updateLeaderboardsCalledTwiceSecondCallReturnsTooSoon() {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When
-        var firstStatus = databaseManager.updateLeaderboards();
-        var secondStatus = databaseManager.updateLeaderboards();
+        LeaderboardStatus firstStatus = databaseManager.updateLeaderboards();
+        LeaderboardStatus secondStatus = databaseManager.updateLeaderboards();
 
         // Then
         assertEquals(LeaderboardStatus.UPDATED, firstStatus);
@@ -229,31 +229,31 @@ class FlatFileDatabaseManagerTest {
     @Test
     void saveUserPersistsUserAndOverwritesNameOnSecondSave() {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
         UUID uuid = UUID.fromString(HEALTHY_DB_LINE_ONE_UUID_STR);
         String originalName = "nossr50";
-        var originalProfile = new PlayerProfile(originalName, uuid, 0);
+        PlayerProfile originalProfile = new PlayerProfile(originalName, uuid, 0);
 
         // When – initial save
         assertTrue(databaseManager.getUsersFile().exists());
         assertTrue(databaseManager.saveUser(originalProfile));
 
         // Then – initial load
-        var loadedProfile = databaseManager.loadPlayerProfile(uuid);
+        PlayerProfile loadedProfile = databaseManager.loadPlayerProfile(uuid);
         assertTrue(loadedProfile.isLoaded());
         assertEquals(uuid, loadedProfile.getUniqueId());
         assertEquals(originalName, loadedProfile.getPlayerName());
 
         // Given – updated name
         String updatedName = "changedmyname";
-        var updatedProfile = new PlayerProfile(updatedName, uuid, 0);
+        PlayerProfile updatedProfile = new PlayerProfile(updatedName, uuid, 0);
 
         // When – overwrite
         assertTrue(databaseManager.saveUser(updatedProfile));
 
         // Then – load again should reflect updated name
-        var reloadedProfile = databaseManager.loadPlayerProfile(uuid);
+        PlayerProfile reloadedProfile = databaseManager.loadPlayerProfile(uuid);
         assertTrue(reloadedProfile.isLoaded());
         assertEquals(uuid, reloadedProfile.getUniqueId());
         assertEquals(updatedName, reloadedProfile.getPlayerName());
@@ -263,7 +263,7 @@ class FlatFileDatabaseManagerTest {
     void addedMissingLastLoginValuesAreSchemaUpgradedAndSetToMinusOne() {
         // Given
         File dbFile = prepareDatabaseTestResource(DB_MISSING_LAST_LOGIN);
-        var databaseManager = new FlatFileDatabaseManager(dbFile, logger, PURGE_TIME, 0, true);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(dbFile, logger, PURGE_TIME, 0, true);
 
         // When
         List<FlatFileDataFlag> flagsFound = databaseManager.checkFileHealthAndStructure();
@@ -273,7 +273,7 @@ class FlatFileDatabaseManagerTest {
         assertTrue(flagsFound.contains(FlatFileDataFlag.LAST_LOGIN_SCHEMA_UPGRADE));
 
         // And – profile last login is set to -1
-        var profile = databaseManager.loadPlayerProfile("nossr50");
+        PlayerProfile profile = databaseManager.loadPlayerProfile("nossr50");
         assertEquals(-1, (long) profile.getLastLogin());
     }
 
@@ -281,7 +281,7 @@ class FlatFileDatabaseManagerTest {
     void loadByNameOnHealthyDatabasePopulatesAllExpectedValues() {
         // Given
         File healthyDbFile = prepareDatabaseTestResource(DB_HEALTHY);
-        var databaseManager = new FlatFileDatabaseManager(healthyDbFile, logger, PURGE_TIME, 0, true);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(healthyDbFile, logger, PURGE_TIME, 0, true);
 
         // When
         List<FlatFileDataFlag> flagsFound = databaseManager.checkFileHealthAndStructure();
@@ -293,7 +293,7 @@ class FlatFileDatabaseManagerTest {
         UUID uuid = UUID.fromString(HEALTHY_DB_LINE_ONE_UUID_STR);
 
         // And – loaded profile has all expected values
-        var profile = databaseManager.loadPlayerProfile(playerName);
+        PlayerProfile profile = databaseManager.loadPlayerProfile(playerName);
         assertHealthyDataProfileValues(playerName, uuid, profile);
     }
 
@@ -303,12 +303,12 @@ class FlatFileDatabaseManagerTest {
         UUID uuid = new UUID(0, 1);
         String playerName = "nossr50";
         int startingLevel = 1337;
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, startingLevel, true);
         databaseManager.checkFileHealthAndStructure();
 
         // When – create and persist new user
-        var playerProfile = databaseManager.newUser(playerName, uuid);
+        PlayerProfile playerProfile = databaseManager.newUser(playerName, uuid);
 
         // Then – in-memory profile
         assertTrue(playerProfile.isLoaded());
@@ -316,7 +316,7 @@ class FlatFileDatabaseManagerTest {
         assertEquals(uuid, playerProfile.getUniqueId());
 
         // And – from disk
-        var profileFromDisk = databaseManager.loadPlayerProfile(uuid);
+        PlayerProfile profileFromDisk = databaseManager.loadPlayerProfile(uuid);
         assertTrue(profileFromDisk.isLoaded());
         assertEquals(playerName, profileFromDisk.getPlayerName());
         assertEquals(uuid, profileFromDisk.getUniqueId());
@@ -342,18 +342,18 @@ class FlatFileDatabaseManagerTest {
         String playerName = "the_kitty_man";
         File file = prepareDatabaseTestResource(DB_HEALTHY);
         int startingLevel = 1337;
-        var databaseManager = new FlatFileDatabaseManager(file, logger, PURGE_TIME, startingLevel, true);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(file, logger, PURGE_TIME, startingLevel, true);
         databaseManager.checkFileHealthAndStructure();
 
         // When – create new user against existing DB
-        var playerProfile = databaseManager.newUser(playerName, uuid);
+        PlayerProfile playerProfile = databaseManager.newUser(playerName, uuid);
 
         // Then
         assertTrue(playerProfile.isLoaded());
         assertEquals(playerName, playerProfile.getPlayerName());
         assertEquals(uuid, playerProfile.getUniqueId());
 
-        var profileFromDisk = databaseManager.loadPlayerProfile(uuid);
+        PlayerProfile profileFromDisk = databaseManager.loadPlayerProfile(uuid);
         assertTrue(profileFromDisk.isLoaded());
         assertEquals(playerName, profileFromDisk.getPlayerName());
         assertEquals(uuid, profileFromDisk.getUniqueId());
@@ -380,7 +380,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void readLeaderboardForPowerLevelsReturnsCorrectPagedResults() throws InvalidSkillException {
         // Given
-        var databaseManager = createDatabaseWithTwoRankedUsers();
+        FlatFileDatabaseManager databaseManager = createDatabaseWithTwoRankedUsers();
 
         // When – page 1 (top player only)
         // Gherkin: Given a leaderboard with two users
@@ -413,7 +413,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void saveUserUuidUpdatesMatchingUserAndReturnsTrue() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
         replaceDataInFile(databaseManager, normalDatabaseData);
 
@@ -429,7 +429,7 @@ class FlatFileDatabaseManagerTest {
         // Then
         assertTrue(worked);
 
-        var lines = getSplitDataFromFile(databaseManager.getUsersFile());
+        List<String[]> lines = getSplitDataFromFile(databaseManager.getUsersFile());
         boolean foundNewUuid = false;
         boolean oldUuidStillPresent = false;
 
@@ -452,7 +452,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void saveUserUuidWithShortEntryDoesNotModifyDataAndReturnsFalse() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         String shortLine = "shortUser:1:2:3"; // very few fields => character.length < 42
@@ -481,7 +481,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void convertUsersCopiesAllNonCommentLinesToDestination() throws IOException {
         // Given
-        var sourceDatabase = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager sourceDatabase = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         String lineOne = "# mcMMO header";
@@ -506,7 +506,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void convertUsersContinuesWhenDestinationSaveThrowsException() throws IOException {
         // Given
-        var sourceDatabase = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager sourceDatabase = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         String header = "# mcMMO header";
@@ -542,7 +542,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void purgeOldUsersRemovesOnlyEntriesOlderThanPurgeTime() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         long now = System.currentTimeMillis();
@@ -584,7 +584,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void removeUserWhenUserExistsRemovesLineAndReturnsTrue() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         String header = "# removeUser header";
@@ -617,7 +617,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void removeUserWhenUserDoesNotExistReturnsFalseAndLeavesFileUnchanged() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         replaceDataInFile(databaseManager, normalDatabaseData);
@@ -664,10 +664,10 @@ class FlatFileDatabaseManagerTest {
     void loadByUUIDOnHealthyDatabaseReturnsExpectedProfile() {
         // Given
         File dbFile = prepareDatabaseTestResource(DB_HEALTHY);
-        var databaseManager = new FlatFileDatabaseManager(dbFile, logger, PURGE_TIME, 0, true);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(dbFile, logger, PURGE_TIME, 0, true);
 
         // When
-        var flagsFound = databaseManager.checkFileHealthAndStructure();
+        List<FlatFileDataFlag> flagsFound = databaseManager.checkFileHealthAndStructure();
 
         // Then
         assertNull(flagsFound); // No flags should be found
@@ -675,7 +675,7 @@ class FlatFileDatabaseManagerTest {
         String playerName = "nossr50";
         UUID uuid = UUID.fromString(HEALTHY_DB_LINE_ONE_UUID_STR);
 
-        var loadedProfile = databaseManager.loadPlayerProfile(uuid);
+        PlayerProfile loadedProfile = databaseManager.loadPlayerProfile(uuid);
         assertHealthyDataProfileValues(playerName, uuid, loadedProfile);
 
         // And – unknown UUID should return an unloaded profile
@@ -686,7 +686,7 @@ class FlatFileDatabaseManagerTest {
     void loadByUUIDAndNameRenamesProfileWhenNameHasChanged() {
         // Given
         File dbFile = prepareDatabaseTestResource(DB_HEALTHY);
-        var databaseManager = new FlatFileDatabaseManager(dbFile, logger, PURGE_TIME, 0, true);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(dbFile, logger, PURGE_TIME, 0, true);
         List<FlatFileDataFlag> flagsFound = databaseManager.checkFileHealthAndStructure();
         assertNull(flagsFound);
 
@@ -695,7 +695,7 @@ class FlatFileDatabaseManagerTest {
         Player originalPlayer = initMockPlayer(originalName, uuid);
 
         // When – load with original name
-        var originalProfile = databaseManager.loadPlayerProfile(originalPlayer);
+        PlayerProfile originalProfile = databaseManager.loadPlayerProfile(originalPlayer);
 
         // Then
         assertHealthyDataProfileValues(originalName, uuid, originalProfile);
@@ -705,20 +705,20 @@ class FlatFileDatabaseManagerTest {
         Player updatedPlayer = initMockPlayer(updatedName, uuid);
 
         // When – load again
-        var updatedProfile = databaseManager.loadPlayerProfile(updatedPlayer);
+        PlayerProfile updatedProfile = databaseManager.loadPlayerProfile(updatedPlayer);
 
         // Then – database name should be updated to new value
         assertHealthyDataProfileValues(updatedName, uuid, updatedProfile);
 
         // And – unknown player returns unloaded profile
         Player missingPlayer = initMockPlayer("doesntexist", new UUID(0, 1));
-        var missingProfile = databaseManager.loadPlayerProfile(missingPlayer);
+        PlayerProfile missingProfile = databaseManager.loadPlayerProfile(missingPlayer);
         assertFalse(missingProfile.isLoaded());
     }
 
     private File prepareDatabaseTestResource(@NotNull String dbFileName) {
         // Given
-        var classLoader = getClass().getClassLoader();
+        ClassLoader classLoader = getClass().getClassLoader();
         URI resourceFileURI;
 
         try {
@@ -786,73 +786,124 @@ class FlatFileDatabaseManagerTest {
     }
 
     private long getExpectedSuperAbilityDATS(@NotNull SuperAbilityType superAbilityType) {
-        return switch (superAbilityType) {
-            case BERSERK -> expectedBerserkCd;
-            case SUPER_BREAKER -> expectedSuperBreakerCd;
-            case GIGA_DRILL_BREAKER -> expectedGigaDrillBreakerCd;
-            case GREEN_TERRA -> expectedGreenTerraCd;
-            case SKULL_SPLITTER -> expectedSkullSplitterCd;
-            case SUPER_SHOTGUN -> expectedSuperShotgunCd;
-            case TREE_FELLER -> expectedTreeFellerCd;
-            case SERRATED_STRIKES -> expectedSerratedStrikesCd;
-            case BLAST_MINING -> expectedBlastMiningCd;
-            case TRIDENTS_SUPER_ABILITY -> expectedTridentSuperCd;
-            case EXPLOSIVE_SHOT -> expectedExplosiveShotCd;
-            case MACES_SUPER_ABILITY -> expectedMacesSuperCd;
-            case SPEARS_SUPER_ABILITY -> expectedSpearsSuperCd;
-            default -> throw new RuntimeException(
-                    "Values not defined for super ability, please add " + superAbilityType);
-        };
+        switch (superAbilityType) {
+            case BERSERK:
+                return expectedBerserkCd;
+            case SUPER_BREAKER:
+                return expectedSuperBreakerCd;
+            case GIGA_DRILL_BREAKER:
+                return expectedGigaDrillBreakerCd;
+            case GREEN_TERRA:
+                return expectedGreenTerraCd;
+            case SKULL_SPLITTER:
+                return expectedSkullSplitterCd;
+            case SUPER_SHOTGUN:
+                return expectedSuperShotgunCd;
+            case TREE_FELLER:
+                return expectedTreeFellerCd;
+            case SERRATED_STRIKES:
+                return expectedSerratedStrikesCd;
+            case BLAST_MINING:
+                return expectedBlastMiningCd;
+            case TRIDENTS_SUPER_ABILITY:
+                return expectedTridentSuperCd;
+            case EXPLOSIVE_SHOT:
+                return expectedExplosiveShotCd;
+            case MACES_SUPER_ABILITY:
+                return expectedMacesSuperCd;
+            case SPEARS_SUPER_ABILITY:
+                return expectedSpearsSuperCd;
+            default:
+                throw new RuntimeException("Values not defined for super ability, please add " + superAbilityType);
+        }
     }
 
     private float getExpectedExperienceHealthyDBEntryOne(@NotNull PrimarySkillType primarySkillType) {
-        return switch (primarySkillType) {
-            case ACROBATICS -> expectedExpAcrobatics;
-            case ALCHEMY -> expectedExpAlchemy;
-            case ARCHERY -> expectedExpArchery;
-            case AXES -> expectedExpAxes;
-            case CROSSBOWS -> expectedExpCrossbows;
-            case EXCAVATION -> expectedExpExcavation;
-            case FISHING -> expectedExpFishing;
-            case HERBALISM -> expectedExpHerbalism;
-            case MINING -> expectedExpMining;
-            case REPAIR -> expectedExpRepair;
-            case SALVAGE, SMELTING -> 0;
-            case SWORDS -> expectedExpSwords;
-            case TAMING -> expectedExpTaming;
-            case TRIDENTS -> expectedExpTridents;
-            case UNARMED -> expectedExpUnarmed;
-            case WOODCUTTING -> expectedExpWoodcutting;
-            case MACES -> expectedExpMaces;
-            case SPEARS -> expectedExpSpears;
-            default -> throw new RuntimeException(
-                    "Values for skill not defined, please add values for " + primarySkillType);
-        };
+        switch (primarySkillType) {
+            case ACROBATICS:
+                return expectedExpAcrobatics;
+            case ALCHEMY:
+                return expectedExpAlchemy;
+            case ARCHERY:
+                return expectedExpArchery;
+            case AXES:
+                return expectedExpAxes;
+            case CROSSBOWS:
+                return expectedExpCrossbows;
+            case EXCAVATION:
+                return expectedExpExcavation;
+            case FISHING:
+                return expectedExpFishing;
+            case HERBALISM:
+                return expectedExpHerbalism;
+            case MINING:
+                return expectedExpMining;
+            case REPAIR:
+                return expectedExpRepair;
+            case SALVAGE:
+            case SMELTING:
+                return 0;
+            case SWORDS:
+                return expectedExpSwords;
+            case TAMING:
+                return expectedExpTaming;
+            case TRIDENTS:
+                return expectedExpTridents;
+            case UNARMED:
+                return expectedExpUnarmed;
+            case WOODCUTTING:
+                return expectedExpWoodcutting;
+            case MACES:
+                return expectedExpMaces;
+            case SPEARS:
+                return expectedExpSpears;
+            default:
+                throw new RuntimeException("Values for skill not defined, please add values for " + primarySkillType);
+        }
     }
 
     private int getExpectedLevelHealthyDBEntryOne(@NotNull PrimarySkillType primarySkillType) {
-        return switch (primarySkillType) {
-            case ACROBATICS -> expectedLvlAcrobatics;
-            case ALCHEMY -> expectedLvlAlchemy;
-            case ARCHERY -> expectedLvlArchery;
-            case AXES -> expectedLvlAxes;
-            case CROSSBOWS -> expectedLvlCrossbows;
-            case EXCAVATION -> expectedLvlExcavation;
-            case FISHING -> expectedLvlFishing;
-            case HERBALISM -> expectedLvlHerbalism;
-            case MINING -> expectedLvlMining;
-            case REPAIR -> expectedLvlRepair;
-            case SALVAGE, SMELTING -> 0;
-            case SWORDS -> expectedLvlSwords;
-            case TAMING -> expectedLvlTaming;
-            case TRIDENTS -> expectedLvlTridents;
-            case UNARMED -> expectedLvlUnarmed;
-            case WOODCUTTING -> expectedLvlWoodcutting;
-            case MACES -> expectedLvlMaces;
-            case SPEARS -> expectedLvlSpears;
-            default -> throw new RuntimeException(
-                    "Values for skill not defined, please add values for " + primarySkillType);
-        };
+        switch (primarySkillType) {
+            case ACROBATICS:
+                return expectedLvlAcrobatics;
+            case ALCHEMY:
+                return expectedLvlAlchemy;
+            case ARCHERY:
+                return expectedLvlArchery;
+            case AXES:
+                return expectedLvlAxes;
+            case CROSSBOWS:
+                return expectedLvlCrossbows;
+            case EXCAVATION:
+                return expectedLvlExcavation;
+            case FISHING:
+                return expectedLvlFishing;
+            case HERBALISM:
+                return expectedLvlHerbalism;
+            case MINING:
+                return expectedLvlMining;
+            case REPAIR:
+                return expectedLvlRepair;
+            case SALVAGE:
+            case SMELTING:
+                return 0;
+            case SWORDS:
+                return expectedLvlSwords;
+            case TAMING:
+                return expectedLvlTaming;
+            case TRIDENTS:
+                return expectedLvlTridents;
+            case UNARMED:
+                return expectedLvlUnarmed;
+            case WOODCUTTING:
+                return expectedLvlWoodcutting;
+            case MACES:
+                return expectedLvlMaces;
+            case SPEARS:
+                return expectedLvlSpears;
+            default:
+                throw new RuntimeException("Values for skill not defined, please add values for " + primarySkillType);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -862,7 +913,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void overwriteName_whenDuplicateNamesExist_rewritesSecondName() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When – overwrite with duplicate name database and fix
@@ -870,18 +921,18 @@ class FlatFileDatabaseManagerTest {
                 FlatFileDataFlag.DUPLICATE_NAME);
 
         // Then – names should no longer be equal
-        var splitDataLines = getSplitDataFromFile(databaseManager.getUsersFile());
+        List<String[]> splitDataLines = getSplitDataFromFile(databaseManager.getUsersFile());
         assertNotEquals(splitDataLines.get(1)[0], splitDataLines.get(0)[0]);
     }
 
     @Test
     void loadPlayerProfileOnMissingData_returnsUnloadedProfile() {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When
-        var retrievedProfile = databaseManager.loadPlayerProfile("nossr50");
+        PlayerProfile retrievedProfile = databaseManager.loadPlayerProfile("nossr50");
 
         // Then
         assertFalse(retrievedProfile.isLoaded());
@@ -890,7 +941,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void purgePowerlessUsersRemovesOnlyUsersWithAllZeroSkills() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
         replaceDataInFile(databaseManager, normalDatabaseData);
 
@@ -904,12 +955,12 @@ class FlatFileDatabaseManagerTest {
     @Test
     void checkFileHealthAndStructureOnBadDatabaseReturnsNonEmptyFlags() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
         replaceDataInFile(databaseManager, badDatabaseData);
 
         // When
-        var dataFlags = databaseManager.checkFileHealthAndStructure();
+        List<FlatFileDataFlag> dataFlags = databaseManager.checkFileHealthAndStructure();
 
         // Then
         assertNotNull(dataFlags);
@@ -919,7 +970,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findFixableDuplicateNamesDetectsDuplicateNameFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -930,7 +981,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findDuplicateUUIDsDetectsDuplicateUuidFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -941,7 +992,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findBadUUIDDataSetsBadUuidDataFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -952,7 +1003,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findCorruptDataSetsCorruptedOrUnrecognizableFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -963,7 +1014,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findEmptyNamesSetsMissingNameFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -974,7 +1025,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findBadValuesSetsBadValuesFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -985,7 +1036,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void findOutdatedDataSetsIncompleteFlag() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -1010,7 +1061,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void readRankReturnsRanksForAllSkillsAndPowerLevel() {
         // Given – empty DB and two users with different levels
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
         final String rankGirlName = "rankGirl";
         final UUID rankGirlUUID = randomUUID();
@@ -1048,7 +1099,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void readLeaderboardChildSkillThrowsInvalidSkillException() {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // When / Then
@@ -1059,7 +1110,7 @@ class FlatFileDatabaseManagerTest {
     @Test
     void getStoredUsersReturnsAllUsernamesFromFlatFile() throws IOException {
         // Given
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
         replaceDataInFile(databaseManager, normalDatabaseData);
 
@@ -1095,7 +1146,7 @@ class FlatFileDatabaseManagerTest {
         assertArrayEquals(BAD_DATA_FILE_LINE_TWENTY_THREE.split(":"), dataFromFile.get(22));
 
         // And – health check should contain BAD_VALUES flag
-        var databaseManager = new FlatFileDatabaseManager(copyOfFile, logger, PURGE_TIME, 0, true);
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(copyOfFile, logger, PURGE_TIME, 0, true);
         List<FlatFileDataFlag> flagsFound = databaseManager.checkFileHealthAndStructure();
         assertNotNull(flagsFound);
         assertTrue(flagsFound.contains(FlatFileDataFlag.BAD_VALUES));
@@ -1231,7 +1282,7 @@ class FlatFileDatabaseManagerTest {
 
     private FlatFileDatabaseManager createDatabaseWithTwoRankedUsers() {
         // Given – a fresh FlatFile DB
-        var databaseManager = new FlatFileDatabaseManager(
+        FlatFileDatabaseManager databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
         // Given – two users with different levels
@@ -1241,8 +1292,8 @@ class FlatFileDatabaseManagerTest {
         databaseManager.newUser("leader", leaderUuid);
         databaseManager.newUser("follower", followerUuid);
 
-        var leaderProfile = databaseManager.loadPlayerProfile(leaderUuid);
-        var followerProfile = databaseManager.loadPlayerProfile(followerUuid);
+        PlayerProfile leaderProfile = databaseManager.loadPlayerProfile(leaderUuid);
+        PlayerProfile followerProfile = databaseManager.loadPlayerProfile(followerUuid);
 
         // Given – leader has higher levels in all non-child skills
         for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {

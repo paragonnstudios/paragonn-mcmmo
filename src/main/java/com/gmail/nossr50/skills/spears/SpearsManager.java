@@ -12,8 +12,6 @@ import com.gmail.nossr50.skills.SkillManager;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import java.util.Locale;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -26,10 +24,7 @@ public class SpearsManager extends SkillManager {
     }
 
     private static @Nullable PotionEffectType mockSpigotMatch(@NotNull String input) {
-        // Replicates match() behaviour for older versions lacking this API
-        final String filtered = input.toLowerCase(Locale.ROOT).replaceAll("\\s+", "_");
-        final NamespacedKey namespacedKey = NamespacedKey.fromString(filtered);
-        return (namespacedKey != null) ? Registry.EFFECT.get(namespacedKey) : null;
+        return PotionEffectType.getByName(input.toUpperCase(Locale.ROOT));
     }
 
     /**

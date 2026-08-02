@@ -26,8 +26,11 @@ import com.gmail.nossr50.util.random.Probability;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -45,14 +48,31 @@ import org.jetbrains.annotations.NotNull;
 public class MiningManager extends SkillManager {
 
     private static final String BUDDING_AMETHYST = "budding_amethyst";
-    private static final Collection<Material> BLAST_MINING_BLACKLIST = Set.of(Material.SPAWNER,
-            Material.INFESTED_COBBLESTONE, Material.INFESTED_DEEPSLATE, Material.INFESTED_STONE,
-            Material.INFESTED_STONE_BRICKS, Material.INFESTED_CRACKED_STONE_BRICKS,
-            Material.INFESTED_CHISELED_STONE_BRICKS, Material.INFESTED_MOSSY_STONE_BRICKS);
-    private final static Set<String> INFESTED_BLOCKS = Set.of("infested_stone",
+    private static final Collection<Material> BLAST_MINING_BLACKLIST;
+    private final static Set<String> INFESTED_BLOCKS = ImmutableSet.of("infested_stone",
             "infested_cobblestone",
             "infested_stone_bricks", "infested_cracked_stone_bricks", "infested_mossy_stone_bricks",
             "infested_chiseled_stone_bricks", "infested_deepslate");
+
+    static {
+        Set<Material> blacklist = new HashSet<>();
+        addIfPresent(blacklist, "SPAWNER");
+        addIfPresent(blacklist, "INFESTED_COBBLESTONE");
+        addIfPresent(blacklist, "INFESTED_DEEPSLATE");
+        addIfPresent(blacklist, "INFESTED_STONE");
+        addIfPresent(blacklist, "INFESTED_STONE_BRICKS");
+        addIfPresent(blacklist, "INFESTED_CRACKED_STONE_BRICKS");
+        addIfPresent(blacklist, "INFESTED_CHISELED_STONE_BRICKS");
+        addIfPresent(blacklist, "INFESTED_MOSSY_STONE_BRICKS");
+        BLAST_MINING_BLACKLIST = ImmutableSet.copyOf(blacklist);
+    }
+
+    private static void addIfPresent(Set<Material> set, String name) {
+        Material material = Material.getMaterial(name);
+        if (material != null) {
+            set.add(material);
+        }
+    }
 
     public MiningManager(@NotNull McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.MINING);
@@ -112,7 +132,7 @@ public class MiningManager extends SkillManager {
      *
      * @param blockState The {@link BlockState} to check ability activation for
      */
-    @Deprecated(since = "2.2.024", forRemoval = true)
+    @Deprecated
     public void miningBlockCheck(BlockState blockState) {
         miningBlockCheck(blockState.getBlock());
     }
@@ -198,7 +218,7 @@ public class MiningManager extends SkillManager {
 
         tnt.setMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT, mmoPlayer.getPlayerMetadata());
         tnt.setFuseTicks(0);
-        tnt.setSource(player);
+        // tnt.setSource(player); // setSource might not exist in 1.8.8
         targetBlock.setType(Material.AIR);
 
         mmoPlayer.setAbilityDATS(SuperAbilityType.BLAST_MINING, System.currentTimeMillis());
@@ -223,7 +243,7 @@ public class MiningManager extends SkillManager {
             return;
         }
 
-        var increasedYieldFromBonuses = yield + (yield * getOreBonus());
+        float increasedYieldFromBonuses = yield + (yield * getOreBonus());
         // Strip out only stuff that gives mining XP
         final List<Block> ores = new ArrayList<>();
         final List<Block> notOres = new ArrayList<>();
@@ -252,7 +272,8 @@ public class MiningManager extends SkillManager {
                 continue;
             }
 
-            if (block.getType().isItem() && Probability.ofPercent(10).evaluate()) {
+            // In 1.8.8 isItem() might not exist on Material
+            if (Probability.ofPercent(10).evaluate()) {
                 ItemUtils.spawnItem(getPlayer(),
                         getBlockCenter(block),
                         new ItemStack(block.getType()),
@@ -276,7 +297,7 @@ public class MiningManager extends SkillManager {
                             isPickaxe(mmoPlayer.getPlayer().getInventory().getItemInMainHand())
                                     ? block.getDrops(
                                     mmoPlayer.getPlayer().getInventory().getItemInMainHand())
-                                    : List.of(new ItemStack(block.getType()));
+                                    : ImmutableList.of(new ItemStack(block.getType()));
                     ItemUtils.spawnItems(getPlayer(), getBlockCenter(block),
                             oreDrops, BLAST_MINING_BLACKLIST, ItemSpawnReason.BLAST_MINING_ORES);
 
@@ -309,8 +330,9 @@ public class MiningManager extends SkillManager {
      * @return true if it's not legal to get the block through normal gameplay
      */
     public boolean isDropIllegal(@NotNull Material material) {
-        return isInfestedBlock(material.getKey().getKey())
-                || material.getKey().getKey().equalsIgnoreCase(BUDDING_AMETHYST)
+        String key = material.name().toLowerCase(Locale.ROOT);
+        return isInfestedBlock(key)
+                || key.equalsIgnoreCase(BUDDING_AMETHYST)
                 || material == Material.SPAWNER;
     }
 
@@ -346,7 +368,7 @@ public class MiningManager extends SkillManager {
         return (float) (mcMMO.p.getAdvancedConfig().getOreBonus(getBlastMiningTier()) / 100F);
     }
 
-    @Deprecated(since = "2.2.017", forRemoval = true)
+    @Deprecated
     public static double getOreBonus(int rank) {
         return mcMMO.p.getAdvancedConfig().getOreBonus(rank);
     }
@@ -378,12 +400,22 @@ public class MiningManager extends SkillManager {
             return 0;
         }
 
-        return switch (getBlastMiningTier()) {
-            case 8, 7 -> 3;
-            case 6, 5, 4, 3 -> 2;
-            case 2, 1 -> 1;
-            default -> 0;
-        };
+        int tier = getBlastMiningTier();
+        switch (tier) {
+            case 8:
+            case 7:
+                return 3;
+            case 6:
+            case 5:
+            case 4:
+            case 3:
+                return 2;
+            case 2:
+            case 1:
+                return 1;
+            default:
+                return 0;
+        }
     }
 
     /**

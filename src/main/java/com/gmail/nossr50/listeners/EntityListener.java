@@ -34,6 +34,7 @@ import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.ProjectileUtils;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -91,17 +92,17 @@ public class EntityListener implements Listener {
     private static final String MULTISHOT = "multishot";
     private static final String PIERCING = "piercing";
     private static final String DEEPSLATE_REDSTONE_ORE = "deepslate_redstone_ore";
-    private static final Set<String> ARMOR_STAND = Set.of("ARMOR_STAND", "armor_stand");
-    private static final Set<String> MANNEQUIN = Set.of("mannequin", "MANNEQUIN");
+    private static final Set<String> ARMOR_STAND = ImmutableSet.of("ARMOR_STAND", "armor_stand");
+    private static final Set<String> MANNEQUIN = ImmutableSet.of("mannequin", "MANNEQUIN");
     private final mcMMO pluginRef;
 
-    /**
+/**
      * We can use this {@link NamespacedKey} for {@link Enchantment} comparisons to check if a
      * {@link Player} has a {@link Trident} enchanted with "Piercing".
      */
     private final NamespacedKey piercingEnchantment = NamespacedKey.minecraft(PIERCING);
     private final static Set<EntityType> TRANSFORMABLE_ENTITIES
-            = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
+            = ImmutableSet.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
 
     public EntityListener(final mcMMO pluginRef) {
         this.pluginRef = pluginRef;
@@ -109,12 +110,14 @@ public class EntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityTransform(EntityTransformEvent event) {
-        if (event.getEntity() instanceof LivingEntity livingEntity) {
+        if (event.getEntity() instanceof LivingEntity) {
+            LivingEntity livingEntity = (LivingEntity) event.getEntity();
 
             //Transfer metadata keys from mob-spawned mobs to new mobs
             if (hasMobFlags(livingEntity)) {
                 for (Entity entity : event.getTransformedEntities()) {
-                    if (entity instanceof LivingEntity transformedEntity) {
+                    if (entity instanceof LivingEntity) {
+                        LivingEntity transformedEntity = (LivingEntity) entity;
                         addMobFlags(livingEntity, transformedEntity);
                     }
                 }
@@ -140,7 +143,8 @@ public class EntityListener implements Listener {
 
         //Prevent entities from giving XP if they target endermite
         if (event.getTarget() instanceof Endermite) {
-            if (event.getEntity() instanceof Enderman enderman) {
+            if (event.getEntity() instanceof Enderman) {
+                Enderman enderman = (Enderman) event.getEntity();
 
                 if (!hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman)) {
                     flagMetadata(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman);
@@ -156,13 +160,15 @@ public class EntityListener implements Listener {
             return;
         }
 
-        if (event.getEntity() instanceof Player player) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
             Entity projectile = event.getProjectile();
 
             //Should be noted that there are API changes regarding Arrow from 1.13.2 to current versions of the game
-            if (!(projectile instanceof Arrow arrow)) {
+            if (!(projectile instanceof Arrow)) {
                 return;
             }
+            Arrow arrow = (Arrow) projectile;
 
             ItemStack bow = event.getBow();
 
@@ -195,7 +201,8 @@ public class EntityListener implements Listener {
             return;
         }
 
-        if (event.getEntity().getShooter() instanceof Player player) {
+        if (event.getEntity().getShooter() instanceof Player) {
+            Player player = (Player) event.getEntity().getShooter();
 
             /* WORLD GUARD MAIN FLAG CHECK */
             if (WorldGuardUtils.isWorldGuardLoaded()) {
@@ -204,9 +211,11 @@ public class EntityListener implements Listener {
                 }
             }
 
-            if (event.getEntity() instanceof Arrow arrow) {
+            if (event.getEntity() instanceof Arrow) {
+                Arrow arrow = (Arrow) event.getEntity();
                 // Delayed metadata cleanup in case other cleanup hooks fail
-                CombatUtils.delayArrowMetaCleanup(arrow);
+
+CombatUtils.delayArrowMetaCleanup(arrow);
 
                 // If fired from an item with multi-shot, we need to track
                 if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, MULTISHOT)) {
@@ -298,16 +307,21 @@ public class EntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityCombustByEntityEvent(EntityCombustByEntityEvent event) {
-        //Prevent players from setting fire to each other if they are in the same party
-        if (event.getEntity() instanceof Player defender) {
 
-            if (event.getCombuster() instanceof Projectile projectile) {
-                if (projectile.getShooter() instanceof Player attacker) {
+//Prevent players from setting fire to each other if they are in the same party
+        if (event.getEntity() instanceof Player) {
+            Player defender = (Player) event.getEntity();
+
+            if (event.getCombuster() instanceof Projectile) {
+                Projectile projectile = (Projectile) event.getCombuster();
+                if (projectile.getShooter() instanceof Player) {
+                    Player attacker = (Player) projectile.getShooter();
                     if (checkIfInPartyOrSamePlayer(event, defender, attacker)) {
                         event.setCancelled(true);
                     }
                 }
-            } else if (event.getCombuster() instanceof Player attacker) {
+            } else if (event.getCombuster() instanceof Player) {
+                Player attacker = (Player) event.getCombuster();
                 if (checkIfInPartyOrSamePlayer(event, defender, attacker)) {
                     event.setCancelled(true);
                 }
@@ -322,7 +336,8 @@ public class EntityListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof LivingEntity livingEntity) {
+        if (event.getEntity() instanceof LivingEntity) {
+            LivingEntity livingEntity = (LivingEntity) event.getEntity();
             if (CombatUtils.hasIgnoreDamageMetadata(livingEntity)) {
                 return;
             }
@@ -339,7 +354,8 @@ public class EntityListener implements Listener {
                     return;
                 }
 
-            } else if (attacker instanceof Projectile projectile) {
+            } else if (attacker instanceof Projectile) {
+                Projectile projectile = (Projectile) attacker;
 
                 if (projectile.getShooter() instanceof Player) {
                     if (!WorldGuardManager.getInstance()
@@ -368,9 +384,10 @@ public class EntityListener implements Listener {
 
         if ((ExperienceConfig.getInstance().isNPCInteractionPrevented()
                 && Misc.isNPCEntityExcludingVillagers(defender)) || !defender.isValid()
-                || !(defender instanceof LivingEntity target)) {
+                || !(defender instanceof LivingEntity)) {
             return;
         }
+        LivingEntity target = (LivingEntity) defender;
 
         if (CombatUtils.isInvincible(target, damage)) {
             return;
@@ -391,7 +408,8 @@ public class EntityListener implements Listener {
             if (animalTamer != null && ((OfflinePlayer) animalTamer).isOnline()) {
                 attacker = (Entity) animalTamer;
             }
-        } else if (attacker instanceof TNTPrimed tntAttacker && defender instanceof Player) {
+        } else if (attacker instanceof TNTPrimed && defender instanceof Player) {
+            TNTPrimed tntAttacker = (TNTPrimed) attacker;
             if (BlastMining.processBlastMiningExplosion(event, tntAttacker,
                     (Player) defender)) {
                 return;
@@ -399,14 +417,18 @@ public class EntityListener implements Listener {
         }
 
         //Friendly fire checks
-        if (defender instanceof Player defendingPlayer) {
+        if (defender instanceof Player) {
+            Player defendingPlayer = (Player) defender;
             //If the attacker is a Player or a projectile belonging to a player
-            if (attacker instanceof Projectile projectile) {
-                if (projectile.getShooter() instanceof Player attackingPlayer
-                        && !attackingPlayer.equals(defendingPlayer)) {
+            if (attacker instanceof Projectile) {
+                Projectile projectile = (Projectile) attacker;
+                if (projectile.getShooter() instanceof Player) {
+                    Player attackingPlayer = (Player) projectile.getShooter();
+                    if (!attackingPlayer.equals(defendingPlayer)) {
                     //Check for friendly fire and cancel the event
                     if (checkIfInPartyOrSamePlayer(event, defendingPlayer, attackingPlayer)) {
                         return;
+                    }
                     }
                 }
 
@@ -416,13 +438,15 @@ public class EntityListener implements Listener {
                     UnarmedManager unarmedManager = mmoPlayer.getUnarmedManager();
 
                     if (unarmedManager.canDeflect()) {
-                        if (projectile instanceof Arrow && unarmedManager.deflectCheck()) {
+
+if (projectile instanceof Arrow && unarmedManager.deflectCheck()) {
                             event.setCancelled(true);
                             return;
                         }
                     }
                 }
-            } else if (attacker instanceof Player attackingPlayer) {
+            } else if (attacker instanceof Player) {
+                Player attackingPlayer = (Player) attacker;
                 if (checkIfInPartyOrSamePlayer(event, defendingPlayer, attackingPlayer)) {
                     return;
                 }
@@ -458,7 +482,8 @@ public class EntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onEntityDamageMonitor(EntityDamageByEntityEvent entityDamageEvent) {
-        if (entityDamageEvent.getEntity() instanceof LivingEntity livingEntity) {
+        if (entityDamageEvent.getEntity() instanceof LivingEntity) {
+            LivingEntity livingEntity = (LivingEntity) entityDamageEvent.getEntity();
 
             if (entityDamageEvent.getFinalDamage() >= livingEntity.getHealth()) {
                 //This sets entity names back to whatever they are supposed to be
@@ -466,12 +491,14 @@ public class EntityListener implements Listener {
             }
         }
 
-        if (entityDamageEvent.getDamager() instanceof Arrow arrow) {
+        if (entityDamageEvent.getDamager() instanceof Arrow) {
+            Arrow arrow = (Arrow) entityDamageEvent.getDamager();
             CombatUtils.delayArrowMetaCleanup(arrow);
         }
 
-        if (entityDamageEvent.getEntity() instanceof Player player
+        if (entityDamageEvent.getEntity() instanceof Player
                 && entityDamageEvent.getDamager() instanceof Player) {
+            final Player player = (Player) entityDamageEvent.getEntity();
             final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             if (mmoPlayer != null) {
                 if (mmoPlayer.isDebugMode()) {
@@ -502,15 +529,16 @@ public class EntityListener implements Listener {
             }
         }
 
-        if (entityDamageEvent.getDamager() instanceof Player player
-                && entityDamageEvent.getEntity() instanceof Player otherPlayer) {
+        if (entityDamageEvent.getDamager() instanceof Player) {
+            final Player player = (Player) entityDamageEvent.getDamager();
             final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             if (mmoPlayer != null) {
                 if (mmoPlayer.isDebugMode()) {
                     player.sendMessage(ChatColor.GOLD
                             + "(mmodebug start of combat report) EntityDamageByEntityEvent DEBUG Info:");
                     player.sendMessage("You are dealing damage to another player in this event");
-                    player.sendMessage("Raw Damage: " + entityDamageEvent.getDamage());
+
+player.sendMessage("Raw Damage: " + entityDamageEvent.getDamage());
 
                     player.sendMessage(ChatColor.GREEN + "Damage Modifiers (final damage)");
                     for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
@@ -520,9 +548,12 @@ public class EntityListener implements Listener {
                     }
 
                     player.sendMessage("Final damage: " + entityDamageEvent.getFinalDamage());
-                    player.sendMessage("Target players max health: " + otherPlayer.getAttribute(
-                            MAPPED_MAX_HEALTH).getValue());
-                    player.sendMessage("Target players current health: " + otherPlayer.getHealth());
+                    if (entityDamageEvent.getEntity() instanceof Player) {
+                        Player otherPlayer = (Player) entityDamageEvent.getEntity();
+                        player.sendMessage("Target players max health: " + otherPlayer.getAttribute(
+                                MAPPED_MAX_HEALTH).getValue());
+                        player.sendMessage("Target players current health: " + otherPlayer.getHealth());
+                    }
 
                     if (entityDamageEvent.isCancelled()) {
                         player.sendMessage(
@@ -581,7 +612,8 @@ public class EntityListener implements Listener {
                     .removeMetadata(MetadataConstants.METADATA_KEY_EXPLOSION_FROM_RUPTURE, mcMMO.p);
         }
 
-        if (event.getEntity() instanceof Player player) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
             /* WORLD GUARD MAIN FLAG CHECK */
             if (WorldGuardUtils.isWorldGuardLoaded()) {
                 if (!WorldGuardManager.getInstance().hasMainFlag(player)) {
@@ -600,7 +632,8 @@ public class EntityListener implements Listener {
          * Old code
          */
 
-        if (event.getEntity() instanceof LivingEntity livingEntity) {
+        if (event.getEntity() instanceof LivingEntity) {
+            LivingEntity livingEntity = (LivingEntity) event.getEntity();
             if (CombatUtils.hasIgnoreDamageMetadata(livingEntity)) {
                 return;
             }
@@ -624,9 +657,10 @@ public class EntityListener implements Listener {
 
         if ((ExperienceConfig.getInstance().isNPCInteractionPrevented()
                 && Misc.isNPCEntityExcludingVillagers(entity)) || !entity.isValid()
-                || !(entity instanceof LivingEntity livingEntity)) {
+                || !(entity instanceof LivingEntity)) {
             return;
         }
+        LivingEntity livingEntity = (LivingEntity) entity;
 
         if (CombatUtils.isInvincible(livingEntity, damage)) {
             return;
@@ -634,7 +668,7 @@ public class EntityListener implements Listener {
 
         DamageCause cause = event.getCause();
 
-        if (livingEntity instanceof Player) {
+if (livingEntity instanceof Player) {
             final Player player = (Player) entity;
 
             if (!UserManager.hasPlayerDataKey(player)) {
@@ -658,10 +692,12 @@ public class EntityListener implements Listener {
                 mmoPlayer.actualizeRecentlyHurt();
             }
 
-        } else if (livingEntity instanceof Tameable pet) {
+        } else if (livingEntity instanceof Tameable) {
+            Tameable pet = (Tameable) livingEntity;
             AnimalTamer owner = pet.getOwner();
 
-            if (owner instanceof Player player) {
+            if (owner instanceof Player) {
+                final Player player = (Player) owner;
                 /* WORLD GUARD MAIN FLAG CHECK */
                 if (WorldGuardUtils.isWorldGuardLoaded()) {
                     if (!WorldGuardManager.getInstance().hasMainFlag(player)) {
@@ -766,7 +802,7 @@ public class EntityListener implements Listener {
     public void onEntityDeath(EntityDeathEvent event) {
         final LivingEntity entity = event.getEntity();
 
-        if (mcMMO.getTransientEntityTracker().isTransient(entity)) {
+if (mcMMO.getTransientEntityTracker().isTransient(entity)) {
             mcMMO.getTransientEntityTracker().killSummonAndCleanMobFlags(entity, null, false);
         }
 
@@ -841,7 +877,8 @@ public class EntityListener implements Listener {
                 father.setLoveModeTicks(0);
 
                 //Inform the player
-                if (event.getBreeder() instanceof Player player) {
+                if (event.getBreeder() instanceof Player) {
+                    Player player = (Player) event.getBreeder();
                     NotificationManager.sendPlayerInformationChatOnly(player,
                             "Taming.Summon.COTW.BreedingDisallowed");
                 }
@@ -892,7 +929,8 @@ public class EntityListener implements Listener {
         final MiningManager miningManager = UserManager.getPlayer(player).getMiningManager();
 
         if (miningManager.canUseBiggerBombs()) {
-            event.setRadius(miningManager.biggerBombs(event.getRadius()));
+
+event.setRadius(miningManager.biggerBombs(event.getRadius()));
         }
     }
 
@@ -958,9 +996,10 @@ public class EntityListener implements Listener {
 
         Entity entity = event.getEntity();
 
-        if (!(entity instanceof Player player)) {
+        if (!(entity instanceof Player)) {
             return;
         }
+        Player player = (Player) entity;
 
         //Profile not loaded
         if (UserManager.getPlayer(player) == null) {
@@ -1027,7 +1066,8 @@ public class EntityListener implements Listener {
              * RESTORES 2 HUNGER - RESTORES 4 1/2 HUNGER @
              * 1000
              */
-            case GOLDEN_CARROT: /*
+
+case GOLDEN_CARROT: /*
              * RESTORES 3 HUNGER - RESTORES 5 1/2 HUNGER @
              * 1000
              */
@@ -1133,9 +1173,11 @@ public class EntityListener implements Listener {
         Entity entity = event.getEntity();
         Entity target = event.getTarget();
 
-        if (!(entity instanceof Tameable tameable) || !(target instanceof Player player)) {
+        if (!(entity instanceof Tameable) || !(target instanceof Player)) {
             return;
         }
+        Tameable tameable = (Tameable) entity;
+        Player player = (Player) target;
 
         /* WORLD GUARD MAIN FLAG CHECK */
         if (WorldGuardUtils.isWorldGuardLoaded()) {
@@ -1152,7 +1194,8 @@ public class EntityListener implements Listener {
         // and the owner is in the same party
         // So we can make some assumptions here, about our casting and our check
         if (!(Permissions.friendlyFire(player) && Permissions.friendlyFire(
-                (Player) tameable.getOwner()))) {
+
+(Player) tameable.getOwner()))) {
             event.setCancelled(true);
         }
     }
@@ -1196,7 +1239,8 @@ public class EntityListener implements Listener {
             return;
         }
 
-        if (event.getEntity() instanceof Arrow arrow) {
+        if (event.getEntity() instanceof Arrow) {
+            Arrow arrow = (Arrow) event.getEntity();
             if (ProjectileUtils.isCrossbowProjectile(arrow)) {
                 Crossbows.processCrossbows(event, pluginRef, arrow);
             }

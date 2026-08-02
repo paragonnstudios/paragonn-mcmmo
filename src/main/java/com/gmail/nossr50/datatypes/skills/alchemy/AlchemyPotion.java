@@ -3,6 +3,7 @@ package com.gmail.nossr50.datatypes.skills.alchemy;
 import static java.util.Objects.requireNonNull;
 
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.util.PotionUtil;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +28,8 @@ public class AlchemyPotion {
         this.alchemyPotionChildren = requireNonNull(alchemyPotionChildren,
                 "alchemyPotionChildren cannot be null");
         this.potionItemMeta = requireNonNull(potionItemStack.getItemMeta(),
-                "potionItemMeta cannot be null"); // The potion item meta should never be null because it is a potion, but if it is null, then something went terribly wrong
+                "potionItemMeta cannot be null"); // The potion item meta should never be null because it is a potion,
+                                                  // but if it is null, then something went terribly wrong
     }
 
     public @NotNull ItemStack toItemStack(int amount) {
@@ -72,25 +75,29 @@ public class AlchemyPotion {
 
         final PotionMeta otherPotionMeta = (PotionMeta) otherMeta;
         // compare custom effects on both potions, this has to be done in two traversals
-        // comparing thisPotionMeta -> otherPotionMeta and otherPotionMeta -> thisPotionMeta
+        // comparing thisPotionMeta -> otherPotionMeta and otherPotionMeta ->
+        // thisPotionMeta
         if (hasDifferingCustomEffects(getAlchemyPotionMeta(), otherPotionMeta)
                 || hasDifferingCustomEffects(otherPotionMeta, getAlchemyPotionMeta())) {
             return false;
         }
 
-        @NotNull PotionMeta potionMeta = getAlchemyPotionMeta();
-        if (!(potionMeta.getBasePotionType() == otherPotionMeta.getBasePotionType())) {
+        @NotNull
+        PotionMeta potionMeta = getAlchemyPotionMeta();
+        if (!(PotionUtil.getBasePotionType(potionMeta) == PotionUtil.getBasePotionType(otherPotionMeta))) {
             return false;
         }
 
-        // Legacy only comparison, compare PotionData
-        @NotNull PotionMeta potionMeta1 = getAlchemyPotionMeta();
-        if (!(potionMeta1.getBasePotionType() == otherPotionMeta.getBasePotionType())) {
+        // Legacy only comparison
+        @NotNull
+        PotionMeta potionMeta1 = getAlchemyPotionMeta();
+        if (!(PotionUtil.getBasePotionType(potionMeta1) == PotionUtil.getBasePotionType(otherPotionMeta))) {
             return false;
         }
 
         /*
-         * If one potion has lore and the other does not, then they are not the same potion.
+         * If one potion has lore and the other does not, then they are not the same
+         * potion.
          * If both have lore, compare the lore.
          * If neither have lore, they may be the same potion.
          */
@@ -105,14 +112,14 @@ public class AlchemyPotion {
 
     private boolean hasDifferingCustomEffects(PotionMeta potionMeta, PotionMeta otherPotionMeta) {
         for (int i = 0; i < potionMeta.getCustomEffects().size(); i++) {
-            var effect = potionMeta.getCustomEffects().get(i);
+            PotionEffect effect = potionMeta.getCustomEffects().get(i);
 
             // One has an effect the other does not, they are not the same potion
             if (!otherPotionMeta.hasCustomEffect(effect.getType())) {
                 return true;
             }
 
-            var otherEffect = otherPotionMeta.getCustomEffects().get(i);
+            PotionEffect otherEffect = otherPotionMeta.getCustomEffects().get(i);
             // Amplifier or duration are not equal, they are not the same potion
             if (effect.getAmplifier() != otherEffect.getAmplifier()
                     || effect.getDuration() != otherEffect.getDuration()) {
@@ -127,11 +134,19 @@ public class AlchemyPotion {
     }
 
     public boolean isSplash() {
-        return potionItemStack.getType() == Material.SPLASH_POTION;
+        try {
+            return potionItemStack.getType() == Material.valueOf("SPLASH_POTION");
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean isLingering() {
-        return potionItemStack.getType() == Material.LINGERING_POTION;
+        try {
+            return potionItemStack.getType() == Material.valueOf("LINGERING_POTION");
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -144,8 +159,9 @@ public class AlchemyPotion {
         }
         AlchemyPotion that = (AlchemyPotion) o;
         return Objects.equals(potionConfigName, that.potionConfigName) && Objects.equals(
-                potionItemStack, that.potionItemStack) && Objects.equals(alchemyPotionChildren,
-                that.alchemyPotionChildren);
+                potionItemStack, that.potionItemStack)
+                && Objects.equals(alchemyPotionChildren,
+                        that.alchemyPotionChildren);
     }
 
     @Override

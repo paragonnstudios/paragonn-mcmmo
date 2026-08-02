@@ -49,7 +49,8 @@ public final class ParticleEffectUtils {
         livingEntity.getWorld()
                 .playEffect(getParticleLocation(livingEntity), Effect.ANVIL_BREAK, null, 20);
 
-        if (livingEntity instanceof Player player) {
+        if (livingEntity instanceof Player) {
+            Player player = (Player) livingEntity;
             final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             boolean useChatNotification = mmoPlayer == null || mmoPlayer.useChatNotifications();
             if (useChatNotification) {
@@ -69,22 +70,30 @@ public final class ParticleEffectUtils {
 
         double offSetVal = 0.3D;
 
-        return switch (RandomUtils.nextInt(0, 10)) {
-            case 0 -> new Location(world, x - offSetVal, y, z);
-            case 1 -> new Location(world, x + offSetVal, y, z);
-            case 2 -> new Location(world, x, y + offSetVal, z);
-            case 3 -> new Location(world, x, y - offSetVal, z);
-            case 4 -> {
-                Location locE = new Location(world, x, y, z + offSetVal);
-                yield new Location(world, x, y, z - offSetVal);
-            }
-            case 5 -> new Location(world, x + offSetVal, y, z + offSetVal);
-            case 6 -> new Location(world, x - offSetVal, y, z - offSetVal);
-            case 7 -> new Location(world, x - offSetVal, y - offSetVal, z - offSetVal);
-            case 8 -> new Location(world, x + offSetVal, y - offSetVal, z + offSetVal);
-            case 9 -> new Location(world, x - offSetVal, y + offSetVal, z - offSetVal);
-            default -> new Location(world, x + offSetVal, y + offSetVal, z - offSetVal);
-        };
+        switch (RandomUtils.nextInt(0, 10)) {
+            case 0:
+                return new Location(world, x - offSetVal, y, z);
+            case 1:
+                return new Location(world, x + offSetVal, y, z);
+            case 2:
+                return new Location(world, x, y + offSetVal, z);
+            case 3:
+                return new Location(world, x, y - offSetVal, z);
+            case 4:
+                return new Location(world, x, y, z - offSetVal);
+            case 5:
+                return new Location(world, x + offSetVal, y, z + offSetVal);
+            case 6:
+                return new Location(world, x - offSetVal, y, z - offSetVal);
+            case 7:
+                return new Location(world, x - offSetVal, y - offSetVal, z - offSetVal);
+            case 8:
+                return new Location(world, x + offSetVal, y - offSetVal, z + offSetVal);
+            case 9:
+                return new Location(world, x - offSetVal, y + offSetVal, z - offSetVal);
+            default:
+                return new Location(world, x + offSetVal, y + offSetVal, z - offSetVal);
+        }
     }
 
     public static void playDodgeEffect(Player player) {
