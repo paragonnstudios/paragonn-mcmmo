@@ -3,8 +3,39 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
+// --- Lógica de Versão ---
+def normalizeVersion(raw) {
+    if (!raw) return null
+    def s = raw.toString().trim()
+    if (s.startsWith('refs/tags/')) s = s.substring(10).trim()
+    if (s.toLowerCase().startsWith('v')) s = s.substring(1).trim()
+    return s ?: null
+}
+
+def resolveProjectVersion() {
+    def v = providers.gradleProperty('releaseVersion')
+            .orElse(providers.environmentVariable('RELEASE_VERSION'))
+            .orElse(providers.environmentVariable('GITHUB_REF'))
+            .orNull
+
+    if (v) {
+        def norm = normalizeVersion(v)
+        if (norm) return norm
+    }
+
+    def manifestFile = layout.projectDirectory.file('.release-please-manifest.json').asFile
+    if (manifestFile.exists()) {
+        def text = manifestFile.text
+        def matcher = (text =~ /"\.":\s*"([^"]+)"/)
+        if (matcher.find()) {
+            return matcher.group(1).trim()
+        }
+    }
+    return '0.0.0-SNAPSHOT'
+}
+
 group = 'com.gmail.nossr50.mcMMO'
-version = '2.2.051-SNAPSHOT'
+version = resolveProjectVersion()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
